@@ -1,0 +1,92 @@
+%% ROSSLER
+% 
+coupling_xy = 2;
+coupling_yx = 1;
+dt = 0.001;
+At = 0.3;
+N= 4096; 
+npre =100000;
+dim= 6;
+max_noise_x = 2;
+max_noise_y = 2;
+min_noise_x = 0;
+min_noise_y = 0;
+noise = 20;
+
+V_x_test_all = zeros(20,20,50);
+M_x_test_all = zeros(20,20,50);
+S_x_test_all = zeros(20,20,50);
+
+for i = 1:50
+    [V_x,V_y,M_x,S_x,R_all,V_s_x,M_s_x,S_s_x,R_all_s] = EA_Rossler_Main(1, coupling_xy,coupling_yx, dt, At, N, npre, ...
+        dim, max_noise_x, max_noise_y, min_noise_x, min_noise_y, noise);
+    
+    for ix = 1:20
+        for iy = 1:20
+            if V_x(ix,iy) < min(V_s_x(ix,iy,1:19))
+                V_x_test_all(ix,iy,i) = 1;
+            end
+    
+            % Test M
+            if M_x(ix,iy) < min(M_s_x(ix,iy,1:19))
+                M_x_test_all(ix,iy,i) = 1;
+            end
+            
+            
+            % Test S
+            if S_x(ix,iy) < min(S_s_x(ix,iy,1:19))
+                S_x_test_all(ix,iy,i) = 1;
+            end
+    
+        end
+    end
+    
+
+end
+
+V_x_test_mean = 
+
+%% ROSSLER Images
+
+% Bidirectional coupling with equal coupling strengths x→y = y→x = 1.
+x_labels = linspace(min_noise_x, max_noise_x, noise);
+y_labels = linspace(min_noise_y, max_noise_y, noise);
+
+% Number of colors in the colormap
+nColors = 256;
+customColormap = [ones(nColors, 1), linspace(0, 1, nColors)', linspace(0, 1, nColors)'];
+% Create a new figure
+figure;
+
+% Subplot for V_x
+subplot(1, 3, 1);  % 1 row, 3 columns, 1st subplot
+imagesc(V_x_test);
+title('Rossler dynamics, non-equal coupling = 2, V_x');
+colorbar;
+colormap(customColormap);
+xticks(1:noise);
+xticklabels(arrayfun(@num2str, x_labels, 'UniformOutput', false));
+yticks(1:noise);
+yticklabels(arrayfun(@num2str, y_labels, 'UniformOutput', false));
+
+% Subplot for V_y
+subplot(1, 3, 2);  % 1 row, 3 columns, 2nd subplot
+imagesc(M_x_test);
+title('Rossler dynamics, non-equal coupling = 1, M_x');
+colorbar;
+colormap(customColormap);
+xticks(1:noise);
+xticklabels(arrayfun(@num2str, x_labels, 'UniformOutput', false));
+yticks(1:noise);
+yticklabels(arrayfun(@num2str, y_labels, 'UniformOutput', false));
+
+% Subplot for R_all
+subplot(1, 3, 3);  % 1 row, 3 columns, 3rd subplot
+imagesc(S_x_test);
+title('Rossler dynamics, non-equal coupling, S_x');
+colorbar;
+colormap(customColormap);
+xticks(1:noise);
+xticklabels(arrayfun(@num2str, x_labels, 'UniformOutput', false));
+yticks(1:noise);
+yticklabels(arrayfun(@num2str, y_labels, 'UniformOutput', false));

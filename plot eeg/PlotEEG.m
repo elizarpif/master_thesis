@@ -1,9 +1,4 @@
-function PlotEEG(filename )
-data = load(filename);
-
-eegData = data.EEG;
-channelNameArray = data.channelNameArray;
-
+function PlotEEG(eegData, channelNameArray, title )
 eegDataT = eegData.';
 
 % sampling frequency; data is sampled at 512 Hz
@@ -16,6 +11,6 @@ global amplitude_parameter;
 amplitude_parameter = 10; % Initial value
 
 % visualise the data
-keypressPlot(time_vector(1:length(eegData)),eegDataT(:,:),channelNameArray(:));
+keypressPlot(time_vector(1:length(eegData)),eegDataT(:,:),channelNameArray(:), title);
 
 end

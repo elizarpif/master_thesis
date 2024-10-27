@@ -1,4 +1,4 @@
-function visualiseChannels( x, y, channelNameArray )
+function visualiseChannels( x, y, channelNameArray, plotTitle )
     nChan = length(channelNameArray);
     
     % Calculate default interval for channel separation
@@ -47,5 +47,5 @@ function visualiseChannels( x, y, channelNameArray )
     % Add X-axis label and title
     xlabel('Time (s)');
     ylabel('Channel Data');
-    title('Multichannel Time-Series Data');
+    title(plotTitle);
 end

@@ -1,6 +1,6 @@
-function keypressPlot(x,y,channelNameArray)
+function keypressPlot(x,y,channelNameArray, title)
 
-visualiseChannels(x,y,channelNameArray)
+visualiseChannels(x,y,channelNameArray, title)
 
 % Set the KeyPressFcn for your figure
 set(gcf, 'KeyPressFcn', @keypress_callback);
@@ -83,7 +83,7 @@ set(gcf, 'KeyPressFcn', @keypress_callback);
                     currentXLim = get(ax, 'XLim');
                     currentYLim = get(ay, 'YLim');
 
-                    visualiseChannels(x,y,channelNameArray);
+                    visualiseChannels(x,y,channelNameArray, title);
 
                     set(ax, 'XLim', currentXLim, 'YLim', currentYLim/1.5);
 
@@ -98,7 +98,7 @@ set(gcf, 'KeyPressFcn', @keypress_callback);
                     currentXLim = get(ax, 'XLim');
                     currentYLim = get(ay, 'YLim');
 
-                    visualiseChannels(x,y,channelNameArray);
+                    visualiseChannels(x,y,channelNameArray, title);
 
                     set(ax, 'XLim', currentXLim, 'YLim', currentYLim*1.5);
 

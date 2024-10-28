@@ -33,11 +33,14 @@ end
 
 numPairs = floor(size(cutEEGData, 1) / 2);  % Compute the number of pairs
 selectedPairs = cell(1, numPairs);  % Preallocate the cell array to improve performance
+selectedPairNames = strings(numPairs);
 
 for idx = 1:numPairs
     eegIdx = 2 * idx - 1;  % Compute the start index for the pair
     pair = cutEEGData(eegIdx:eegIdx + 1, :, :);  % Extract the pair
     selectedPairs{idx} = pair;  % Store the pair directly
+
+    selectedPairNames(idx) = sprintf('%s-%s',channelNameArray{eegIdx}, channelNameArray{eegIdx+1});
 end
 
 %% parallel workers setup
@@ -59,8 +62,8 @@ R_test = zeros(numPairs, 1);
 % parfor idx = 1:length(selectedPairs)
 for idx = 1:length(selectedPairs)
     currentArray = selectedPairs{idx};  % Access pre-sliced data for current pair
-    channelName = channelNameArray{idx};  % Access the corresponding channel name
-    
+    channelName = selectedPairNames{idx};  % Access the corresponding channel name
+
     disp(channelName)
 
     [R_i, R_test_i] = RCom(currentArray, 0);
@@ -71,9 +74,12 @@ for idx = 1:length(selectedPairs)
 end
 
 %% visulaisation
-figure(1);
-ax1 = subplot(2,2,1);
-createConditionalBarChart(ax1, R(:,1), R_test(:,1), 'Bar Chart of R');
-
-% Enhance spacing between subplots
-sgtitle('Mean phase coherence'); % Super title for all subplots
+figure;
+imagesc(R(:,1));
+colorbar;
+% Set x-axis ticks to integers
+yticks(1:size(R, 1));
+yticklabels(selectedPairNames);
+ylabel('Row Index');
+xticks(1);
+title('R for all channels, 160s-200s, Pat14, Sz1');

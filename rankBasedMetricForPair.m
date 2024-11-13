@@ -1,4 +1,4 @@
-data = load("example EEGs/EEG3.mat");
+data = load("bern dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
 
 eegData = data.EEG';
 channelNameArray = data.channelNameArray;
@@ -7,10 +7,8 @@ numChannels = 64;  % Number of EEG channels
 cutEEGData = zeros(numChannels,length(eegData)/2);  % Preallocate matrix for filtered and downsampled data
 
 for i = 1:numChannels
-    % Extract channel data
     channelData = eegData(i,:);
     downsampledData = downsample(channelData, 2);
-    % Store in matrix
     cutEEGData(i, :) = downsampledData;
 end
 
@@ -45,7 +43,7 @@ end
 
 dataMatrix = cell2mat(LPairs'); % Transpose the cell array and convert to matrix
 
-% Create a heatmap
+%% Create a heatmap
 figure;
 imagesc(dataMatrix);
 colorbar;

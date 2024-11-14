@@ -1,11 +1,11 @@
 
 % Параметры систем Рёсслера
-wx = 0.995;
-wy = 1.015;
 Ex = 2;  % Коэффициент связи для X
 Ey = 0;  % Коэффициент связи для Y
 
 % Начальные условия
+wx = 1.1;
+wy = 0.9;
 x0 = rand(3,1);
 y0 = rand(3,1);
 % x0 = [1; 0; 0];  % Начальные значения для системы X
@@ -39,36 +39,49 @@ for i = 1:n_steps-1
     y_res(:, i+1) = y_current + h * dy;
 end
 
+%% Plot x1 vs y1
 % Построение графиков системы X и Y
-figure;
-xlim([min(t), max(t)]);
-subplot(3,1,1);
-plot(t, y_res(1, :));
-title('Система Y');
-xlabel('Время');
-ylabel('y_1(t)');
+% plot(t, x_res(1,:), 'b', t, y_res(1,:), 'r'); % 'b' и 'r' задают цвета кривых
+% xlim([min(t), max(t)]);
+% xlabel('Time');
+% ylabel('Values');
+% legend('x_1', 'y_1');
+% title(sprintf('Rossler: x_1 and y_1, coupling Ex = %.1f', Ex));
+% grid on;
+%% Plot y1, y2, y3 
+% subplot(3,1,1);
+% plot(t, y_res(1, :));
+% xlim([min(t), max(t)]);
+% % title('y_1(t)');
+% xlabel('Time');
+% ylabel('y_1');
+% 
+% subplot(3,1,2);
+% plot(t, y_res(2, :));
+% xlim([min(t), max(t)]);
+% % title('y_2(t)');
+% xlabel('Time');
+% ylabel('y_2');
+% 
+% subplot(3,1,3);
+% plot(t, y_res(3, :));
+% xlim([min(t), max(t)]);
+% % title('y_3(t)');
+% xlabel('Time');
+% ylabel('y_3');
+% grid on;
+% %
+%% Plot 3d x 
+% figure;
+% plot3(x_res(1,:), x_res(2,:), x_res(3,:));
+% xlabel('X');
+% ylabel('Y');
+% zlabel('Z');
+% title('3D Plot Example');
+% grid on;
 
-subplot(3,1,2);
-plot(t, y_res(2, :));
-title('Система Y');
-xlabel('Время');
-ylabel('y_2(t)');
 
-subplot(3,1,3);
-plot(t, y_res(3, :));
-title('Система Y');
-xlabel('Время');
-ylabel('y_3(t)');
-%
-
-figure;
-plot3(x_res(1,:), x_res(2,:), x_res(3,:));
-xlabel('X');
-ylabel('Y');
-zlabel('Z');
-title('3D Plot Example');
-grid on;
-
+%% L metric 
 % l = 1;
 % r = 20*512;
 % k = 5;
@@ -96,8 +109,8 @@ grid on;
 % Params:
 % x - 3-d vector
 % w_freq - natural wrequency, when the system oscillate
-% coupling
-% coupled_var
+% coupling - coupling value, (for the system X it will be Ey)
+% coupled_var (for the system X it will be y1)
 function rez = rossler_eq(x, w_freq, coupling, coupled_var)
     a = 0.2;
     b = 0.2;

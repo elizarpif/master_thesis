@@ -1,78 +1,82 @@
-% Параметры систем Рёсслера
-Ex = 0.2;  % Коэффициент связи для X
-Ey = 0;  % Коэффициент связи для Y
+% Coupling params
+Ex = 0.15;  % X->Y
+Ey = 0;  % Y->X
 
-% Начальные условия
+% Natural frequencies
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = logspace(log10(0.001), log10(0.3), 30);
-% couplingInc = 0.01;
-% couplingX_values = 0:couplingInc:Ex; % Coupling strengths
-runNumber = 5;
+res = Rossler(Ex, Ey, wx, wy);
 
-tic
+%% Coupling (0.1, 0.3)
+% couplingX_values = logspace(log10(0.001), log10(0.3), 30);
+% % couplingInc = 0.01;
+% % couplingX_values = 0:couplingInc:Ex; % Coupling strengths
+% runNumber = 1;
+% 
+% tic
+% 
+% L_YX_values_mean = zeros(size(couplingX_values)); % Preallocate delta L results
+% L_XY_values_mean = zeros(size(couplingX_values)); % Preallocate delta L results
+% R_XY_values_mean = zeros(size(couplingX_values));
+% 
+% 
+% % Loop over coupling strengths
+% for idx = 1:length(couplingX_values)
+% 
+%     L_YX_values = zeros(size(runNumber)); % Preallocate delta L results
+%     L_XY_values = zeros(size(runNumber)); % Preallocate delta L results
+%     R_XY_values = zeros(size(runNumber));
+% 
+% 
+%     for runIdx = 1:runNumber
+%         couplingX = couplingX_values(idx);
+%         res = Rossler(couplingX, Ey, wx, wy);
+% 
+% 
+%         %% L metric
+%         k = 5;
+%         theiler_correction = 50;
+%         tau = 4;
+%         m=8;
+%         %
+%         datarec = [res(1,:); res(4,:)]';
+%         Lmetric = HSLMNCom(datarec,m,tau,k,theiler_correction);
+% 
+%         % deltaL = metric(2,2); %  - metric(2,1);
+% 
+%         L_YX_values(runIdx) = Lmetric(2,1);
+%         L_XY_values(runIdx) = Lmetric(2,2);
+% 
+%         Rmetric = EA_MeanPhaseCoherence(datarec');
+%         R_XY_values(runIdx) = Rmetric;
+% 
+%     end
+% 
+%     L_YX_values_mean(idx) = mean(L_YX_values);
+%     L_XY_values_mean(idx) = mean(L_XY_values);
+%     R_XY_values_mean(idx) = mean(R_XY_values);
+% end
+% toc
+% 
+% figure;
+% plot( ...
+%     couplingX_values, L_XY_values_mean, 'b', ...
+%     couplingX_values, L_YX_values_mean, 'r', ...
+%     couplingX_values, R_XY_values_mean, 'g' ...
+%     );
+% legend('L(X|Y)', 'L(Y|X)', 'R');
+% xlabel('E_x');
+% ylabel('metric');
+% title('L and R depending on coupling strength');
+% grid on;
 
-L_YX_values_mean = zeros(size(couplingX_values)); % Preallocate delta L results
-L_XY_values_mean = zeros(size(couplingX_values)); % Preallocate delta L results
-R_XY_values_mean = zeros(size(couplingX_values));
-
-
-% Loop over coupling strengths
-for idx = 1:length(couplingX_values)
-
-    L_YX_values = zeros(size(runNumber)); % Preallocate delta L results
-    L_XY_values = zeros(size(runNumber)); % Preallocate delta L results
-    R_XY_values = zeros(size(runNumber));
-
-
-    for runIdx = 1:runNumber
-        couplingX = couplingX_values(idx);
-        res = Rossler(couplingX, Ey, wx, wy);
-
-
-        %% L metric
-        k = 5;
-        theiler_correction = 50;
-        tau = 4;
-        m=8;
-        %
-        datarec = [res(1,:); res(4,:)]';
-        Lmetric = HSLMNCom(datarec,m,tau,k,theiler_correction);
-
-        % deltaL = metric(2,2); %  - metric(2,1);
-
-        L_YX_values(runIdx) = Lmetric(2,1);
-        L_XY_values(runIdx) = Lmetric(2,2);
-
-        Rmetric = EA_MeanPhaseCoherence(datarec');
-        R_XY_values(runIdx) = Rmetric;
-
-    end
-
-    L_YX_values_mean(idx) = mean(L_YX_values);
-    L_XY_values_mean(idx) = mean(L_XY_values);
-    R_XY_values_mean(idx) = mean(R_XY_values);
-end
-toc
-
-figure;
-plot( ...
-    couplingX_values, L_XY_values_mean, 'b', ...
-    couplingX_values, L_YX_values_mean, 'r', ...
-    couplingX_values, R_XY_values_mean, 'g' ...
-    );
-legend('L(X|Y)', 'L(Y|X)', 'R');
-xlabel('E_x');
-ylabel('mean metric');
-title('mean L and R depending on coupling strength');
-grid on;
-
+%% Rossler 
 function res = Rossler(Ex, Ey, wx, wy)
-% x0 = rand(3,1);
-% y0 = rand(3,1);
-x0 = [1; 0; 0];  % Начальные значения для системы X
-y0 = [1; 0; 0];  % Начальные значения для системы Y
+x0 = rand(3,1);
+y0 = rand(3,1);
+% x0 = [1; 0; 0];  % Начальные значения для системы X
+% y0 = [1; 0; 0];  % Начальные значения для системы Y
 
 % Время интеграции
 h = 0.03;           % integration step
@@ -142,21 +146,33 @@ end
 % title('3D Plot Example');
 % grid on;
 
-res = [x_res(:, length(x_res)-10240:length(x_res)); y_res(:, length(x_res)-10240:length(y_res))];
+x_res2 = x_res(:, length(x_res)-10240:length(x_res));
+y_res2 = y_res(:, length(x_res)-10240:length(y_res));
+t_2 = t(length(t)-10240:length(t));
 
-% plot_x1_vs_y1(res(1,:), res(4,:), t(length(t)-10240:length(t)), Ex);
+% Generate uncorrelated white Gaussian noise
+noise = randn(size(x_res2(1,:))); % Zero mean, unit variance
+noisy_x = x_res2(1,:) + noise;
+
+noise = randn(size(y_res2(1,:))); % Zero mean, unit variance
+noisy_y = y_res2(1,:) + noise;
+
+res = [noisy_x; noisy_y];
+
+plot_x1_vs_y1(noisy_x, noisy_y, t_2, Ex);
 end
 
 %% Plot x1 vs y1
 function plot_x1_vs_y1(x_res, y_res, t, Ex)
-% Построение графиков системы X и Y
 figure;
-plot(t, x_res(1,:), 'b', t, y_res(1,:), 'r'); % 'b' и 'r' задают цвета кривых
+plot(t, x_res, 'b', ...
+    t, y_res, 'r' ...
+    ); % 'b' и 'r' задают цвета кривых
 xlim([min(t), max(t)]);
 xlabel('Time');
 ylabel('Values');
 legend('x_1', 'y_1');
-title(sprintf('Rossler: x_1 and y_1, coupling Ex = %.1f', Ex));
+title(sprintf('Rossler: x_1 and y_1, coupling Ex = %f', Ex));
 grid on;
 
 end

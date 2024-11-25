@@ -6,9 +6,10 @@ Ey = 0;  % Y->X
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [0, logspace(log10(0.001), log10(1), 20)];
+% 
+couplingX_values = [0, logspace(log10(0.001), log10(0.01), 10)];
 runNumber = 10;
-isPlotX1Y1 = true;
+isPlotX1Y1 = false;
 
 L_YX_values_mean = zeros(size(couplingX_values));
 L_XY_values_mean = zeros(size(couplingX_values)); 
@@ -34,14 +35,14 @@ for idx = 1:length(couplingX_values)
         theiler_correction = 50;
         tau = 4;
         m=8;
+        %
         datarec = [res; res]';
-
         Lmetric = HSLMNCom(datarec,m,tau,k,theiler_correction);
 
         L_YX_values(runIdx) = Lmetric(2,1);
         L_XY_values(runIdx) = Lmetric(2,2);
 
-        %% R metric
+        %% R metric 
         Rmetric = EA_MeanPhaseCoherence(datarec');
         R_values(runIdx) = Rmetric;
 
@@ -57,6 +58,7 @@ for idx = 1:length(couplingX_values)
 end
 toc
 
+% Plot all runs and the mean for L_XY_values
 figure(1);
 hold on;
 for idx = 1:size(L_XY_values_N, 2)
@@ -92,11 +94,12 @@ ylabel('R');
 title('R Metric: Individual Runs and Mean');
 grid on;
 
+% plot 3 metrics
 figure(4);
 plot( ...
     couplingX_values, L_XY_values_mean, 'b', ...
     couplingX_values, L_YX_values_mean, 'r', ...
-    couplingX_values, R_values_mean, 'g' ...
+    couplingX_values, R_XY_values_mean, 'g' ...
     );
 legend('L(X|Y)', 'L(Y|X)', 'R');
 xlabel('E_x');
@@ -109,18 +112,16 @@ function res = Rossler(Ex, Ey, wx, wy, isPlotX1Y1)
 x0 = rand(3,1);
 y0 = rand(3,1);
 
-h = 0.03;           % integration step
-n_steps = 10240*2;
+h = 0.03; % integration step
+n_steps = 10240*2;    
 t = 0:h:(n_steps-1)*h;
 
-% Инициализация массивов для хранения решений
 x_res = zeros(3, n_steps);
 y_res = zeros(3, n_steps);
 x_res(:, 1) = x0;
 y_res(:, 1) = y0;
 
 for i = 1:n_steps-1
-    % Текущее состояние
     x_current = x_res(:, i);
     y_current = y_res(:, i);
 
@@ -145,14 +146,22 @@ for i = 1:n_steps-1
     y_res(:, i+1) = y_current + (k1_y + 2 * k2_y + 2 * k3_y + k4_y) / 6;
 end
 
+% deminish transients
 x_res2 = x_res(:, length(x_res)-10240:length(x_res));
 y_res2 = y_res(:, length(x_res)-10240:length(y_res));
 t_2 = t(length(t)-10240:length(t));
 
-res = [x_res2; y_res2];
+% Generate uncorrelated white Gaussian noise
+noise = randn(size(x_res2(1,:))); % Zero mean, unit variance
+noisy_x = x_res2(1,:) + noise;
 
-if isPlotX1Y1
-    plot_x1_vs_y1(x_res, y_res, t, Ex);
+noise = randn(size(y_res2(1,:))); % Zero mean, unit variance
+noisy_y = y_res2(1,:) + noise;
+
+res = [noisy_x; noisy_y];
+
+if isPlotX1Y1 
+   plot_x1_vs_y1(x_res2, y_res2, t_2, Ex);
 end
 
 end
@@ -160,6 +169,7 @@ end
 %% Plot x1 vs y1
 function plot_x1_vs_y1(x_res, y_res, t, Ex)
 figure;
+    % t, x_res, 'b', ...
 plot( t, x_res, 'b', ...
     t, y_res, 'r' ...
     ); % 'b' и 'r' задают цвета кривых

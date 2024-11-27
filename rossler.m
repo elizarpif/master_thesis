@@ -6,7 +6,7 @@ Ey = 0;    % Coupling strength Y->X
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [0, logspace(log10(0.001), log10(0.1), 20)]; % Coupling strengths
+couplingX_values = logspace(log10(0.135), log10(0.17), 13); % Coupling strengths
 numRuns = 10; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
 

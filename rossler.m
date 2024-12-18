@@ -4,7 +4,7 @@ Ey=0;
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [logspace(log10(0.01), log10(0.7), 20)]; % Coupling strengths
+couplingX_values = [logspace(log10(0.1), log10(1), 30)]; % Coupling strengths
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
 
@@ -17,11 +17,14 @@ L_YX_mean = zeros(size(couplingX_values));
 L_XY_mean = zeros(size(couplingX_values));
 R_mean = zeros(size(couplingX_values));
 G_mean = zeros(size(couplingX_values));
+S_mean = zeros(size(couplingX_values));
 
 L_XY_all = zeros(length(couplingX_values), numRuns);
 L_YX_all = zeros(length(couplingX_values), numRuns);
 R_all = zeros(length(couplingX_values), numRuns);
 G_all = zeros(length(couplingX_values), numRuns);
+S_all = zeros(length(couplingX_values), numRuns);
+
 
 %% Main loop over coupling strengths
 tic
@@ -32,6 +35,7 @@ for idx = 1:length(couplingX_values)
     L_XY_runs = zeros(numRuns, 1);
     R_runs = zeros(numRuns, 1);
     G_runs = zeros(numRuns, 1);
+    S_runs = zeros(numRuns, 1);
 
     for runIdx = 1:numRuns
         % Simulate Rossler systems
@@ -44,18 +48,7 @@ for idx = 1:length(couplingX_values)
         [x, tx] = downsampleSignal(res(1,:), res(4,:), false);
         [y, ty] = downsampleSignal(res(2,:), res(4,:), false);
         [y_aux, ty_aux] = downsampleSignal(res(3,:), res(4,:), false);
-        % log(sprintf("Ex = %f, run = %d, downsample finished", couplingX, runIdx));
 
-        % if isPlotX1Y1
-        %     figure;
-        %     plot(tx, x, 'b', ty, y, 'r');
-        %     xlabel('Time');
-        %     ylabel('Values');
-        %     legend('x_1', 'y_1');
-        %     title(sprintf('Rossler: x_1 and y_1 Dynamics with E_x = %.3f, E_y = %.3f', couplingX, Ey));
-        %     grid on;
-        % end
-        % Use only the first variables of x and y
         datarec = [x; y]';
 
         % Compute L metric
@@ -63,17 +56,15 @@ for idx = 1:length(couplingX_values)
 
         log(sprintf("Ex = %f, run = %d, metric L computed", couplingX, runIdx));
 
-
         L_YX_runs(runIdx) = Lmetric(2, 1); % L(Y|X)
         L_XY_runs(runIdx) = Lmetric(2, 2); % L(X|Y)
 
-        phasey1 = instantaneous_phase(y);
-        phasey2 = instantaneous_phase(y_aux);
-
-        G = abs(sin((phasey1-phasey2)/2));
+        G = computeGMetric(y, y_aux);
         G_runs(runIdx) = mean(G);
         log(sprintf("Ex = %f, run = %d, delta=%f", couplingX, runIdx, mean(G)));
 
+        S_runs(runIdx) = computeSMetric(x,y);
+        log(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, s));
 
         % Compute R metric
         R_runs(runIdx) = computeRMetric(datarec);
@@ -86,30 +77,42 @@ for idx = 1:length(couplingX_values)
     L_XY_mean(idx) = mean(L_XY_runs);
     R_mean(idx) = mean(R_runs);
     G_mean(idx) = mean(G_runs);
+    S_mean(idx) = mean(S_runs);
 
     % Store all runs for plotting
     L_XY_all(idx, :) = L_XY_runs;
     L_YX_all(idx, :) = L_YX_runs;
     R_all(idx, :) = R_runs;
     G_all(idx,:) = G_runs;
+    S_all(idx,:) = S_runs;
 end
 toc
 
 %% Plot results
-plotMetricResults(couplingX_values, L_XY_all, L_XY_mean, 'L_{XY}');
-plotMetricResults(couplingX_values, L_YX_all, L_YX_mean, 'L_{YX}');
-plotMetricResults(couplingX_values, G_all, G_mean, 'G');
-plotMetricResults(couplingX_values, R_all, R_mean, 'R');
+% plotMetricResults(couplingX_values, L_XY_all, L_XY_mean, 'L_{XY}');
+% plotMetricResults(couplingX_values, L_YX_all, L_YX_mean, 'L_{YX}');
+% plotMetricResults(couplingX_values, R_all, R_mean, 'R');
+% plotMetricResults(couplingX_values, L_XY_all-L_YX_all, L_XY_mean-L_YX_mean, 'delta L')
 
-plotMetricResults(couplingX_values, L_XY_all-L_YX_all, L_XY_mean-L_YX_mean, 'delta L')
+figure;
+plot( couplingX_values, S_mean, 'r', 'LineWidth', 1);
+xlabel('Coupling E_x');
+ylabel('Mean S metric');
+title(sprintf("S metric, accumulated order parameter phase difference"));
+grid on;
+
+figure;
+plot( couplingX_values, R_mean, 'r', 'LineWidth', 1);
+xlabel('Coupling E_x');
+ylabel('Mean R metric');
+title(sprintf("R metric, mean phase coherence"));
+grid on;
 % Combined plot for mean metrics
 % couplingX_values, L_XY_mean-L_YX_mean, 'c', ...
 figure;
 plot(couplingX_values, L_XY_mean, 'b', ...
     couplingX_values, L_YX_mean, 'r', ...
     couplingX_values, R_mean, 'g', 'LineWidth', 1);
-% 'k' - black
-% 'L(X|Y)-L(Y|X)', ...
 legend('L(X|Y)', 'L(Y|X)', ...
     'R');
 xlabel('Coupling E_x');
@@ -263,9 +266,28 @@ function log(message)
 disp(sprintf("%s: %s", datestr(now, 'HH:MM:SS.FFF AM'), message));
 end
 
+function G = computeGMetric(y, y_aux)
+    % Compute G metric based on phase difference between y and y_aux
+    phase_y = instantaneous_phase(y);
+    phase_y_aux = instantaneous_phase(y_aux);
+    G = abs(sin((phase_y - phase_y_aux) / 2));
+end
+
+function S = computeSMetric(x, y)
+    % Compute S metric based on phase difference accumulation
+    phase_x = instantaneous_phase(x);
+    phase_y = instantaneous_phase(y);
+    delta_phase = unwrap(phase_x) - unwrap(phase_y);
+    S = (max(delta_phase) - min(delta_phase)) / (2 * pi);
+end
+
 function instantaneous_phase=instantaneous_phase(x)
 % Compute the analytic signal using the Hilbert transform
 analytic_signal = hilbert(x);
 % Compute the instantaneous phase
 instantaneous_phase = angle(analytic_signal);
+% phase = (atan2(imag(analytic_signal),real(analytic_signal)));
+% if instantaneous_phase ~= phase 
+%     log("instantaneous phase diff %v != %v", instantaneous_phase,phase )
+% end
 end

@@ -81,27 +81,44 @@ end
 
 
 % Plot the results
+% Calculate time points for each interval in seconds
+timePoints = (0:intervalJump:length(eegDataOriginal)-1) / Fs;
+
+% Plot L_XY metrics
 figure;
-subplot(3, 1, 1);
-imagesc(L_XY_all);
+imagesc(timePoints, 1:numPairs, L_XY_all);
 colorbar;
 title('L_{XY} Metrics Over Time');
-xlabel('Interval');
+xlabel('Time (s)');
 ylabel('Pair Index');
+set(gca, 'FontSize', 12); % Setting font size for clarity
 
-subplot(3, 1, 2);
-imagesc(L_YX_all);
+% Plot L_YX metrics
+figure;
+imagesc(timePoints, 1:numPairs, L_YX_all);
 colorbar;
 title('L_{YX} Metrics Over Time');
-xlabel('Interval');
+xlabel('Time (s)');
 ylabel('Pair Index');
+set(gca, 'FontSize', 12); % Setting font size for clarity
 
-subplot(3, 1, 3);
-imagesc(R_all);
+% Plot R metrics
+figure;
+imagesc(timePoints, 1:numPairs, R_all);
 colorbar;
 title('R Metrics Over Time');
-xlabel('Interval');
+xlabel('Time (s)');
 ylabel('Pair Index');
+set(gca, 'FontSize', 12); % Setting font size for clarity
 
-% Enhance plot appearance
-set(gcf, 'Name', 'EEG Metric Analysis', 'NumberTitle', 'off');
+% Calculate the difference between L_XY and L_YX
+L_diff = L_XY_all - L_YX_all;
+
+% Plot the difference metrics
+figure;
+imagesc(timePoints, 1:numPairs, L_diff);
+colorbar;
+title('Difference (L_{XY} - L_{YX}) Metrics Over Time');
+xlabel('Time (s)');
+ylabel('Pair Index');
+set(gca, 'FontSize', 12); % Setting font size for clarity

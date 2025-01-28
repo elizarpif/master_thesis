@@ -1,5 +1,5 @@
 % Load data from file
-data = load("bern dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+data = load("bern dataset/100 seizures/Pat15/P15_Sz1_block37.mat");
 eegDataOriginal = data.EEG';
 
 % Define sampling frequency and time vector
@@ -45,11 +45,47 @@ for interval = 1:intervalJump:length(eegDataOriginal)
         eegData = eegData(:, 1:end-1); % Trim to make length even
     end
 
+    % Anti-aliasing filter
+    newFs = Fs/2;
+    newNyquistFreq = newFs/2;
+    lowpassCutoff = newNyquistFreq-10; % low pass is slightly below the new Nyquist
+    order = 8; % selected this order as an example
+    % Создание полосового фильтра Баттерворта для поиска спайков
+    [b, a] = butter(order, lowpassCutoff / newNyquistFreq, 'low');
+    % 
+    % exampleChannelData = eegData(1, :);
+    % filteredExampleChannelData = filter(b, a, exampleChannelData);
+    % 
+    % figure();
+    % [p, f] = periodogram(exampleChannelData);
+    % plot(f * Fs / (2*pi), 10*log10(p));
+    % title('TBR05');
+    % xlabel('Frequency (Hz)')
+    % ylabel('Power/frequency (dB/(rad/sample))');
+    % hold on;
+    % yline(0, '--r');
+    % xline(newNyquistFreq, '--r');
+    % hold off;
+    % 
+    % %verification
+    % figure();
+    % [p, f] = periodogram(filteredExampleChannelData);
+    % plot(f * Fs / (2*pi), 10*log10(p));
+    % title('TPL06\_filtered');
+    % xlabel('Frequency (Hz)');
+    % ylabel('Power/frequency (dB/(rad/sample))');
+    % hold on;
+    % yline(0, '--r');
+    % xline(newNyquistFreq, '--r');
+    % hold off;
+
     % Downsample data
     cutEEGData = zeros(numChannels, size(eegData, 2) / 2);
     for i = 1:numChannels
         channelData = eegData(i, :);
-        downsampledData = downsample(channelData, 2);
+        filteredChannelData = filter(b, a, channelData);
+
+        downsampledData = downsample(filteredChannelData, 2);
         cutEEGData(i, :) = downsampledData;
     end
 
@@ -122,3 +158,5 @@ title('Difference (L_{XY} - L_{YX}) Metrics Over Time');
 xlabel('Time (s)');
 ylabel('Pair Index');
 set(gca, 'FontSize', 12); % Setting font size for clarity
+
+% save('EEG_Metrics.mat', 'L_XY_all', 'L_YX_all', 'R_all');

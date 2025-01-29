@@ -14,6 +14,6 @@ modified_noise = original_noise * noise_level;
 
 snr = std(original_signal)/std(modified_noise);
 
-disp(['snr: ', num2str(snr)]);
+% disp(['snr: ', num2str(snr)]);
 
 noisy_signal = original_signal + modified_noise;

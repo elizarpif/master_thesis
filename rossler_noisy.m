@@ -1,3 +1,5 @@
+% I need to plot noise level versus coupling strengths and results
+% so I need to store all MEAN values in (0-5) 6x31 array
 %% Parameters for noisy Rossler
 Ey=0;
 % Natural frequencies
@@ -14,79 +16,202 @@ L_YX_mean = zeros(size(couplingX_values));
 L_XY_mean = zeros(size(couplingX_values));
 R_mean = zeros(size(couplingX_values));
 
-L_XY_all = zeros(length(couplingX_values), numRuns);
-L_YX_all = zeros(length(couplingX_values), numRuns);
-R_all = zeros(length(couplingX_values), numRuns);
+noise_levels = 1:5;
+
+L_YX_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
+L_XY_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
+R_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
 
 
 %% Main loop over coupling strengths
-tic
-for idx = 1:length(couplingX_values)
-    couplingX = couplingX_values(idx);
 
-    L_YX_runs = zeros(numRuns, 1);
-    L_XY_runs = zeros(numRuns, 1);
-    R_runs = zeros(numRuns, 1);
-    G_runs = zeros(numRuns, 1);
-    S_runs = zeros(numRuns, 1);
+for noise_level = noise_levels
+    for idx = 1:length(couplingX_values)
+        couplingX = couplingX_values(idx);
 
-    for runIdx = 1:numRuns
-        % Simulate Rossler systems
-        res1 = simulateRossler(couplingX, Ey, wx, wy);
+        L_YX_runs = zeros(numRuns, 1);
+        L_XY_runs = zeros(numRuns, 1);
+        R_runs = zeros(numRuns, 1);
+        % G_runs = zeros(numRuns, 1);
+        % S_runs = zeros(numRuns, 1);
 
-        % Downsample and take only the last half
-        [x_original, tx] = downsampleSignal(res1(1,:), res1(4,:), false);
-        [y_original, ty] = downsampleSignal(res1(2,:), res1(4,:), false);
+        for runIdx = 1:numRuns
+            % Simulate Rossler systems
+            res1 = simulateRossler(couplingX, Ey, wx, wy);
 
-        l = 1;
-        
-        x = add_measurement_noise(x_original, l);
-        y = add_measurement_noise(y_original, l);
+            % Downsample and take only the last half
+            [x_original, tx] = downsampleSignal(res1(1,:), res1(4,:), false);
+            [y_original, ty] = downsampleSignal(res1(2,:), res1(4,:), false);
 
-        plot_x1_vs_noisy_x1(x_original, x, tx, "level = 1");
+            l = noise_level;
 
-        datarec = [x; y]';
+            x = add_measurement_noise(x_original, l);
+            y = add_measurement_noise(y_original, l);
 
-        % Compute L metric
-        Lmetric = computeLMetric(datarec);
+            % plot_x1_vs_noisy_x1(x_original, x, tx, sprintf("level = %d", l));
 
-        log(sprintf("Ex = %f, run = %d, metric L computed", couplingX, runIdx));
+            datarec = [x; y]';
 
-        L_YX_runs(runIdx) = Lmetric(2, 1); % L(Y|X)
-        L_XY_runs(runIdx) = Lmetric(2, 2); % L(X|Y)
+            % Compute L metric
+            Lmetric = computeLMetric(datarec);
 
-        % Compute R metric
-        R_runs(runIdx) = computeRMetric(datarec);
-        log(sprintf("Ex = %f, run = %d, metric R computed", couplingX, runIdx));
+            % log(sprintf("Ex = %f, run = %d, metric L computed", couplingX, runIdx));
 
+            L_YX_runs(runIdx) = Lmetric(2, 1); % L(Y|X)
+            L_XY_runs(runIdx) = Lmetric(2, 2); % L(X|Y)
+
+            % Compute R metric
+            R_runs(runIdx) = computeRMetric(datarec);
+            % log(sprintf("Ex = %f, run = %d, metric R computed", couplingX, runIdx));
+
+        end
+        % Compute mean metrics
+        L_YX_mean(idx) = mean(L_YX_runs);
+        L_XY_mean(idx) = mean(L_XY_runs);
+        R_mean(idx) = mean(R_runs);
+
+        log(sprintf("mean metric computed for E_x = %f, noise level = %d", couplingX, noise_level))
     end
 
-    % Compute mean metrics
-    L_YX_mean(idx) = mean(L_YX_runs);
-    L_XY_mean(idx) = mean(L_XY_runs);
-    R_mean(idx) = mean(R_runs);
+    L_XY_noisy_coupling_mean(noise_level,:) = L_XY_mean;
+    L_YX_noisy_coupling_mean(noise_level,:) = L_YX_mean;
+    R_noisy_coupling_mean(noise_level,:) = R_mean;
 
-    % Store all runs for plotting
-    L_XY_all(idx, :) = L_XY_runs;
-    L_YX_all(idx, :) = L_YX_runs;
-    R_all(idx, :) = R_runs;
+    log(sprintf("mean metric computed for noise level = %d", noise_level))
 end
-toc
 
 %% Plot results
-plotMetricResults(couplingX_values, L_XY_all-L_YX_all, L_XY_mean-L_YX_mean, 'delta L')
+% plotMetricResults(couplingX_values, L_XY_all-L_YX_all, L_XY_mean-L_YX_mean, 'delta L')
 % Combined plot for mean metrics
 % couplingX_values, L_XY_mean-L_YX_mean, 'c', ...
+
+% figure;
+% plot(couplingX_values, R_noisy_coupling_mean(1,:), 'b', ...
+%     couplingX_values, R_noisy_coupling_mean(2,:), 'r', ...
+%     couplingX_values, R_noisy_coupling_mean(3,:), 'g', ...
+%         couplingX_values, R_noisy_coupling_mean(4,:), 'm', ...
+%     couplingX_values, R_noisy_coupling_mean(5,:), 'c', ...
+%     'LineWidth', 1);
+% legend('R noise level=1', 'R noise level=2', ...
+%     'R noise level=3', 'R noise level=4', 'R noise level=5');
+% xlabel('Coupling E_x');
+% ylabel('Mean metric value');
+% title('');
+% grid on;
+% 
+% figure;
+% plot(couplingX_values, L_XY_noisy_coupling_mean(1,:), 'b', ...
+%     couplingX_values, L_XY_noisy_coupling_mean(2,:), 'r', ...
+%     couplingX_values, L_XY_noisy_coupling_mean(3,:), 'g', ...
+%         couplingX_values, L_XY_noisy_coupling_mean(4,:), 'm', ...
+%     couplingX_values, L_XY_noisy_coupling_mean(5,:), 'c', ...
+%     'LineWidth', 1);
+% legend('L(X|Y) noise level=1', 'L(X|Y) noise level=2', ...
+%     'L(X|Y) noise level=3', 'L(X|Y) noise level=4', 'L(X|Y) noise level=5');
+% xlabel('Coupling E_x');
+% ylabel('Mean metric value');
+% title('');
+% grid on;
+
 figure;
-plot(couplingX_values, L_XY_mean, 'b', ...
-    couplingX_values, L_YX_mean, 'r', ...
-    couplingX_values, R_mean, 'g', 'LineWidth', 1);
-legend('L(X|Y)', 'L(Y|X)', ...
-    'R');
+plot(couplingX_values, L_YX_noisy_coupling_mean(1,:), 'b', ...
+    couplingX_values, L_YX_noisy_coupling_mean(2,:), 'r', ...
+    couplingX_values, L_YX_noisy_coupling_mean(3,:), 'g', ...
+        couplingX_values, L_YX_noisy_coupling_mean(4,:), 'm', ...
+    couplingX_values, L_YX_noisy_coupling_mean(5,:), 'c', ...
+    'LineWidth', 1);
+legend('L(Y|X) noise level=1', 'L(Y|X) noise level=2', ...
+    'L(Y|X) noise level=3', 'L(Y|X) noise level=4', 'L(Y|X) noise level=5');
 xlabel('Coupling E_x');
-ylabel('Mean metric value');
+ylabel('Mean L(X|Y)-L(Y|X) metric value');
 title('');
 grid on;
+
+figure;
+plot(couplingX_values, L_XY_noisy_coupling_mean(1,:)-L_YX_noisy_coupling_mean(1,:), 'b', ...
+    couplingX_values, L_XY_noisy_coupling_mean(2,:)-L_YX_noisy_coupling_mean(2,:), 'r', ...
+    couplingX_values, L_XY_noisy_coupling_mean(3,:)-L_YX_noisy_coupling_mean(3,:), 'g', ...
+        couplingX_values, L_XY_noisy_coupling_mean(4,:)-L_YX_noisy_coupling_mean(4,:), 'm', ...
+    couplingX_values, L_XY_noisy_coupling_mean(5,:)-L_YX_noisy_coupling_mean(5,:), 'c', ...
+    'LineWidth', 1);
+legend('deltaL noise level=1', 'deltaL noise level=2', ...
+    'deltaL noise level=3', 'deltaL noise level=4', 'deltaL noise level=5');
+xlabel('Coupling E_x');
+ylabel('Mean L(X|Y)-L(Y|X) metric value');
+title('');
+grid on;
+% figure;
+% plot(couplingX_values, L_XY_noisy_coupling_mean(2,:), 'b', ...
+%     couplingX_values, L_YX_noisy_coupling_mean(2,:), 'r', ...
+%     couplingX_values, R_noisy_coupling_mean(2,:), 'g', 'LineWidth', 1);
+% legend('L(X|Y)', 'L(Y|X)', ...
+%     'R');
+% xlabel('Coupling E_x');
+% ylabel('Mean metric value, level=5');
+% title('');
+% grid on;
+
+% Plotting colormap de deltaL
+figure;
+imagesc(1:size(L_XY_noisy_coupling_mean, 2), 1:size(L_XY_noisy_coupling_mean, 1), L_XY_noisy_coupling_mean-L_YX_noisy_coupling_mean);
+colorbar;  % Adds a color bar to indicate the scale
+xlabel('Coupling Strength');
+ylabel('Noise Level');
+title('Mean L(X|Y)-L(Y|X) Metric Values for Noise vs. Coupling Strength');
+
+% Setting the x-ticks and y-ticks
+xticks(1:length(couplingX_values));  % Set x-ticks at each column index
+xticklabels(arrayfun(@(x) sprintf('%.2f', x), couplingX_values, 'UniformOutput', false));  % Label each x-tick with corresponding coupling strength
+
+yticks(1:length(noise_levels));  % Set y-ticks at each row index
+yticklabels(arrayfun(@(x) num2str(x), noise_levels, 'UniformOutput', false));  % Label each y-tick with corresponding noise level
+
+% Plotting colormap L(X|Y)
+figure;
+imagesc(1:size(L_XY_noisy_coupling_mean, 2), 1:size(L_XY_noisy_coupling_mean, 1), L_XY_noisy_coupling_mean);
+colorbar;  % Adds a color bar to indicate the scale
+xlabel('Coupling Strength');
+ylabel('Noise Level');
+title('Mean L(X|Y) Metric Values for Noise vs. Coupling Strength');
+
+% Setting the x-ticks and y-ticks
+xticks(1:length(couplingX_values));  % Set x-ticks at each column index
+xticklabels(arrayfun(@(x) sprintf('%.2f', x), couplingX_values, 'UniformOutput', false));  % Label each x-tick with corresponding coupling strength
+
+yticks(1:length(noise_levels));  % Set y-ticks at each row index
+yticklabels(arrayfun(@(x) num2str(x), noise_levels, 'UniformOutput', false));  % Label each y-tick with corresponding noise level
+
+
+% Plotting colormap L(Y|X)
+figure;
+imagesc(1:size(L_YX_noisy_coupling_mean, 2), 1:size(L_YX_noisy_coupling_mean, 1), L_YX_noisy_coupling_mean);
+colorbar;  % Adds a color bar to indicate the scale
+xlabel('Coupling Strength');
+ylabel('Noise Level');
+title('Mean L(Y|X) Metric Values for Noise vs. Coupling Strength');
+
+% Setting the x-ticks and y-ticks
+xticks(1:length(couplingX_values));  % Set x-ticks at each column index
+xticklabels(arrayfun(@(x) sprintf('%.2f', x), couplingX_values, 'UniformOutput', false));  % Label each x-tick with corresponding coupling strength
+
+yticks(1:length(noise_levels));  % Set y-ticks at each row index
+yticklabels(arrayfun(@(x) num2str(x), noise_levels, 'UniformOutput', false));  % Label each y-tick with corresponding noise level
+
+%  R
+figure;
+imagesc(1:size(R_noisy_coupling_mean, 2), 1:size(R_noisy_coupling_mean, 1), R_noisy_coupling_mean);
+colorbar;  % Adds a color bar to indicate the scale
+xlabel('Coupling Strength');
+ylabel('Noise Level');
+title('Mean R Metric Values for Noise vs. Coupling Strength');
+
+% Setting the x-ticks and y-ticks
+xticks(1:length(couplingX_values));  % Set x-ticks at each column index
+xticklabels(arrayfun(@(x) sprintf('%.2f', x), couplingX_values, 'UniformOutput', false));  % Label each x-tick with corresponding coupling strength
+
+yticks(1:length(noise_levels));  % Set y-ticks at each row index
+yticklabels(arrayfun(@(x) num2str(x), noise_levels, 'UniformOutput', false));  % Label each y-tick with corresponding noise level
+
 
 %% Functions
 function res = simulateRossler(Ex, Ey, wx, wy)
@@ -147,13 +272,13 @@ res = [x_res(1,:); y_res(1,:); y_res_aux(1,:); t];
 % xlim([t(end-4096*3), t(end)]);
 % % xlabel('Time');
 % ylabel('x_1');
-% 
+%
 % subplot(3,1,2);
 % plot(t(end-4096*3:end), x_res(2, end-4096*3:end));
 % xlim([t(end-4096*3), t(end)]);
 % % xlabel('Time');
 % ylabel('x_2');
-% 
+%
 % subplot(3,1,3);
 % plot(t(end-4096*3:end), x_res(3, end-4096*3:end));
 % xlim([t(end-4096*3), t(end)]);
@@ -163,7 +288,7 @@ res = [x_res(1,:); y_res(1,:); y_res_aux(1,:); t];
 end
 
 function [x_noisy] = addNoise(x, l)
-% 
+%
 % Generate uncorrelated white Gaussian noise
 noise = randn(size(x(1,:))); % Zero mean, unit variance
 
@@ -177,7 +302,7 @@ snr = var(x)/var(modified_noise);
 
 log(sprintf("SNR=%f", snr));
 
-x_noisy = x(1,:) + snr*modified_noise; 
+x_noisy = x(1,:) + snr*modified_noise;
 end
 
 function [x, t] = downsampleSignal(x_res, t, isPlotDynamics)
@@ -250,18 +375,18 @@ disp(sprintf("%s: %s", datestr(now, 'HH:MM:SS.FFF AM'), message));
 end
 
 function G = computeGMetric(y, y_aux)
-    % Compute G metric based on phase difference between y and y_aux
-    phase_y = instantaneous_phase(y);
-    phase_y_aux = instantaneous_phase(y_aux);
-    G = abs(sin((phase_y - phase_y_aux) / 2));
+% Compute G metric based on phase difference between y and y_aux
+phase_y = instantaneous_phase(y);
+phase_y_aux = instantaneous_phase(y_aux);
+G = abs(sin((phase_y - phase_y_aux) / 2));
 end
 
 function S = computeSMetric(x, y)
-    % Compute S metric based on phase difference accumulation
-    phase_x = instantaneous_phase(x);
-    phase_y = instantaneous_phase(y);
-    delta_phase = unwrap(phase_x) - unwrap(phase_y);
-    S = (max(delta_phase) - min(delta_phase)) / (2 * pi);
+% Compute S metric based on phase difference accumulation
+phase_x = instantaneous_phase(x);
+phase_y = instantaneous_phase(y);
+delta_phase = unwrap(phase_x) - unwrap(phase_y);
+S = (max(delta_phase) - min(delta_phase)) / (2 * pi);
 end
 
 function instantaneous_phase=instantaneous_phase(x)
@@ -275,9 +400,9 @@ end
 %% Plot x1 vs noisy_x1
 function plot_x1_vs_noisy_x1(x_res, y_res, t, titlePlot)
 figure;
-    % t, x_res, 'b', ...
+% t, x_res, 'b', ...
 plot( t(end-200:end), x_res(end-200:end), 'b', ...
-      t(end-200:end), y_res(end-200:end), 'r' ...
+    t(end-200:end), y_res(end-200:end), 'r' ...
     ); % 'b' и 'r' задают цвета кривых
 xlabel('Time');
 ylabel('Values');

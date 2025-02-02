@@ -13,7 +13,7 @@ channelNameArray = data.channelNameArray;
 numChannels = length(channelNameArray); % Number of EEG channels
 
 % Set interval jump for processing
-intervalJump = 5120; % Number of samples to jump for each interval
+intervalJump = 10240; % Number of samples to jump for each interval
 totalIntervals = floor(length(eegDataOriginal) / intervalJump);
 
 % Initialize overall storage for metrics
@@ -115,48 +115,10 @@ for interval = 1:intervalJump:length(eegDataOriginal)
     logger(sprintf("Processing completed for %d intervals, interval = %d", interval, interval));
 end
 
+timePoints = (intervalJump:intervalJump:length(eegDataOriginal)-1) / Fs;
 
-% Plot the results
-% Calculate time points for each interval in seconds
-timePoints = (0:intervalJump:length(eegDataOriginal)-1) / Fs;
+eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, Fs, 'L_{XY}');
+eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, Fs, 'L_{YX}');
+eegImagescResult(timePoints, R_all, numPairs, intervalJump, Fs, 'R');
+eegImagescResult(timePoints, L_XY_all - L_YX_all, numPairs, intervalJump, Fs, 'delta L');
 
-% Plot L_XY metrics
-figure;
-imagesc(timePoints, 1:numPairs, L_XY_all);
-colorbar;
-title('L_{XY} Metrics Over Time');
-xlabel('Time (s)');
-ylabel('Pair Index');
-set(gca, 'FontSize', 12); % Setting font size for clarity
-
-% Plot L_YX metrics
-figure;
-imagesc(timePoints, 1:numPairs, L_YX_all);
-colorbar;
-title('L_{YX} Metrics Over Time');
-xlabel('Time (s)');
-ylabel('Pair Index');
-set(gca, 'FontSize', 12); % Setting font size for clarity
-
-% Plot R metrics
-figure;
-imagesc(timePoints, 1:numPairs, R_all);
-colorbar;
-title('R Metrics Over Time');
-xlabel('Time (s)');
-ylabel('Pair Index');
-set(gca, 'FontSize', 12); % Setting font size for clarity
-
-% Calculate the difference between L_XY and L_YX
-L_diff = L_XY_all - L_YX_all;
-
-% Plot the difference metrics
-figure;
-imagesc(timePoints, 1:numPairs, L_diff);
-colorbar;
-title('Difference (L_{XY} - L_{YX}) Metrics Over Time');
-xlabel('Time (s)');
-ylabel('Pair Index');
-set(gca, 'FontSize', 12); % Setting font size for clarity
-
-% save('EEG_Metrics.mat', 'L_XY_all', 'L_YX_all', 'R_all');

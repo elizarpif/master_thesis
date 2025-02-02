@@ -16,7 +16,7 @@ L_YX_mean = zeros(size(couplingX_values));
 L_XY_mean = zeros(size(couplingX_values));
 R_mean = zeros(size(couplingX_values));
 
-noise_levels = 1:5;
+noise_levels = 1:2:10;
 
 L_YX_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
 L_XY_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
@@ -25,7 +25,9 @@ R_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
 
 %% Main loop over coupling strengths
 
-for noise_level = noise_levels
+for index = 1:length(noise_levels)
+    noise_level = noise_levels(idx);
+
     for idx = 1:length(couplingX_values)
         couplingX = couplingX_values(idx);
 
@@ -73,9 +75,9 @@ for noise_level = noise_levels
         log(sprintf("mean metric computed for E_x = %f, noise level = %d", couplingX, noise_level))
     end
 
-    L_XY_noisy_coupling_mean(noise_level,:) = L_XY_mean;
-    L_YX_noisy_coupling_mean(noise_level,:) = L_YX_mean;
-    R_noisy_coupling_mean(noise_level,:) = R_mean;
+    L_XY_noisy_coupling_mean(index,:) = L_XY_mean;
+    L_YX_noisy_coupling_mean(index,:) = L_YX_mean;
+    R_noisy_coupling_mean(index,:) = R_mean;
 
     log(sprintf("mean metric computed for noise level = %d", noise_level))
 end
@@ -120,8 +122,8 @@ plot(couplingX_values, L_YX_noisy_coupling_mean(1,:), 'b', ...
         couplingX_values, L_YX_noisy_coupling_mean(4,:), 'm', ...
     couplingX_values, L_YX_noisy_coupling_mean(5,:), 'c', ...
     'LineWidth', 1);
-legend('L(Y|X) noise level=1', 'L(Y|X) noise level=2', ...
-    'L(Y|X) noise level=3', 'L(Y|X) noise level=4', 'L(Y|X) noise level=5');
+legend('L(Y|X) noise level=1', 'L(Y|X) noise level=3', ...
+    'L(Y|X) noise level=5', 'L(Y|X) noise level=7', 'L(Y|X) noise level=9');
 xlabel('Coupling E_x');
 ylabel('Mean L(X|Y)-L(Y|X) metric value');
 title('');
@@ -134,8 +136,8 @@ plot(couplingX_values, L_XY_noisy_coupling_mean(1,:)-L_YX_noisy_coupling_mean(1,
         couplingX_values, L_XY_noisy_coupling_mean(4,:)-L_YX_noisy_coupling_mean(4,:), 'm', ...
     couplingX_values, L_XY_noisy_coupling_mean(5,:)-L_YX_noisy_coupling_mean(5,:), 'c', ...
     'LineWidth', 1);
-legend('deltaL noise level=1', 'deltaL noise level=2', ...
-    'deltaL noise level=3', 'deltaL noise level=4', 'deltaL noise level=5');
+legend('deltaL noise level=1', 'deltaL noise level=3', ...
+    'deltaL noise level=5', 'deltaL noise level=7', 'deltaL noise level=9');
 xlabel('Coupling E_x');
 ylabel('Mean L(X|Y)-L(Y|X) metric value');
 title('');

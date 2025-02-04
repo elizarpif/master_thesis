@@ -4,7 +4,7 @@ Ey=0;
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [logspace(log10(0.1), log10(0.2), 30)]; % Coupling strengths
+couplingX_values = [ 1]; % Coupling strengths
 
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
@@ -53,14 +53,13 @@ for idx = 1:length(couplingX_values)
         % [x2, tx2] = downsampleSignal(res2(1,:), res2(4,:), false);
         % [y2, ty2] = downsampleSignal(res2(2,:), res2(4,:), false);
         % 
-        % figure;
-        % plot(tx, x, 'b', ty, y, 'r');
-        % ylabel('Values');
-        % xlim([tx(1), tx(250)])
-        % xlabel('Time');
-        % set(gcf,'position',[0,0,600,200])
-        % legend('x_1', 'y_1');
-        % 
+        figure;
+        plot(tx, x, 'b', ty, y, 'r');
+        ylabel('Values');
+        xlim([tx(1), tx(250)])
+        xlabel('Time [a.u.]');
+        set(gcf,'position',[0,0,600,200])
+        lgd = legend('x_1', 'y_1', 'AutoUpdate', 'off', 'Location', 'northeastoutside');        % 
         % figure;
         % plot(tx2, x2, 'b', ty2, y2, 'r');
         % ylabel('Values');

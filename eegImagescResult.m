@@ -1,4 +1,4 @@
-function eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, Fs, metricName)
+function eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, Fs, metricName, selectedPairNames)
     % Plot metrics with vertical red lines at specific points
 
     % Create the figure
@@ -17,6 +17,7 @@ function eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, Fs, metr
     xticks(timePoints + halfIntervalWidth); 
     xticklabels(string(timePoints)); % Use string to ensure correct display
     yticks(1:numPairs); % Ensure y-ticks cover all pairs
+    yticklabels(selectedPairNames);
 
     % Add vertical red lines
     hold on;

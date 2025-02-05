@@ -48,8 +48,8 @@ order = 8; % selected this order as an example
 % hold off;
 
 % Ensure even number of samples for downsampling
-if mod(size(eegData, 2), 2) ~= 0
-    eegData = eegData(:, 1:end-1); % Trim to make length even
+if mod(size(eegDataOriginal, 2), 2) ~= 0
+    eegDataOriginal = eegDataOriginal(:, 1:end-1); % Trim to make length even
 end
 
 % Downsample data
@@ -65,7 +65,7 @@ end
 
 % Set interval jump for processing
 intervalJump = 10240 / 2; % Number of samples to jump for each interval
-totalIntervals = floor(length(eegDataOriginal) / intervalJump);
+totalIntervals = floor(length(downsampledEEGData) / intervalJump);
 
 % Initialize overall storage for metrics
 numPairs = floor(numChannels / 2);
@@ -73,10 +73,11 @@ L_XY_all = zeros(numPairs, totalIntervals);
 L_YX_all = zeros(numPairs, totalIntervals);
 R_all = zeros(numPairs, totalIntervals);
 
+intervalIndex = 0; % Initialize interval index
 
 % Process each interval of EEG data
 for interval = intervalJump:intervalJump:length(downsampledEEGData)
-    if interval + intervalJump > length(downsampledEEGData)
+    if interval > length(downsampledEEGData)
         disp('Break: Interval exceeds data length')
         break;
     end
@@ -91,7 +92,7 @@ for interval = intervalJump:intervalJump:length(downsampledEEGData)
 
     % Create pairs of EEG channels
     selectedPairs = cell(1, numPairs);
-    selectedPairNames = strings(numPairs);
+    selectedPairNames = strings(numPairs, 1);
 
     for idx = 1:numPairs
         eegIdx = 2 * idx - 1;
@@ -111,13 +112,15 @@ for interval = intervalJump:intervalJump:length(downsampledEEGData)
         R_all(idx, intervalIndex) = computeRMetric(selectedPairs{idx}');
     end
     % Log processing completion
-    logger(sprintf("Processing completed for interval = %d", interval));
+    logger(sprintf("Processing completed for interval [%d, %d]", interval-intervalJump, interval));
 end
 
-timePoints = (intervalJump:intervalJump:length(downsampledEEGData)-1) / newFs;
+timePoints = (intervalJump:intervalJump:length(downsampledEEGData)) / newFs;
 
-% eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, Fs, 'L_{XY}');
-% eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, Fs, 'L_{YX}');
-% eegImagescResult(timePoints, R_all, numPairs, intervalJump, Fs, 'R');
-eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L');
+eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, newFs, 'L_{XY}',selectedPairNames);
+eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, 'L_{YX}',selectedPairNames);
+eegImagescResult(timePoints, R_all, numPairs, intervalJump, newFs, 'R',selectedPairNames);
+eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L', selectedPairNames);
+eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L', selectedPairNames);
+
 %

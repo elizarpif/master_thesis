@@ -20,48 +20,23 @@ lowpassCutoff = newNyquistFreq-10; % low pass is slightly below the new Nyquist
 order = 8; % selected this order as an example
 % Создание полосового фильтра Баттерворта для поиска спайков
 [b, a] = butter(order, lowpassCutoff / newNyquistFreq, 'low');
-%
-% exampleChannelData = eegData(1, :);
-% filteredExampleChannelData = filter(b, a, exampleChannelData);
-%
-% figure();
-% [p, f] = periodogram(exampleChannelData);
-% plot(f * Fs / (2*pi), 10*log10(p));
-% title('TBR05');
-% xlabel('Frequency (Hz)')
-% ylabel('Power/frequency (dB/(rad/sample))');
-% hold on;
-% yline(0, '--r');
-% xline(newNyquistFreq, '--r');
-% hold off;
-%
-% %verification
-% figure();
-% [p, f] = periodogram(filteredExampleChannelData);
-% plot(f * Fs / (2*pi), 10*log10(p));
-% title('TPL06\_filtered');
-% xlabel('Frequency (Hz)');
-% ylabel('Power/frequency (dB/(rad/sample))');
-% hold on;
-% yline(0, '--r');
-% xline(newNyquistFreq, '--r');
-% hold off;
 
 % Ensure even number of samples for downsampling
 if mod(size(eegDataOriginal, 2), 2) ~= 0
     eegDataOriginal = eegDataOriginal(:, 1:end-1); % Trim to make length even
 end
 
-% Downsample data
+% Downsample data and filter by band
 downsampledEEGData = zeros(numChannels, size(eegDataOriginal, 2) / 2);
 for i = 1:numChannels
     channelData = eegDataOriginal(i, :);
     filteredChannelData = filter(b, a, channelData);
 
     downsampledData = downsample(filteredChannelData, 2);
-    downsampledEEGData(i, :) = downsampledData;
+    downsampledEEGData(i, :) = filterByBand(downsampledData, newFs, "delta");
 end
 
+% PlotEEG(downsampledEEGData', channelNameArray, newFs, 'theta')
 
 % Set interval jump for processing
 intervalJump = 10240 / 2; % Number of samples to jump for each interval
@@ -117,10 +92,10 @@ end
 
 timePoints = (intervalJump:intervalJump:length(downsampledEEGData)) / newFs;
 
-eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, newFs, 'L_{XY}',selectedPairNames);
-eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, 'L_{YX}',selectedPairNames);
-eegImagescResult(timePoints, R_all, numPairs, intervalJump, newFs, 'R',selectedPairNames);
-eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L', selectedPairNames);
-eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L', selectedPairNames);
+eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, newFs, 'L_{XY} (delta)',selectedPairNames);
+eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, 'L_{YX} (delta)',selectedPairNames);
+eegImagescResult(timePoints, R_all, numPairs, intervalJump, newFs, 'R (delta)',selectedPairNames);
+eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'delta L (delta band)', selectedPairNames);
+% eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, 'abs delta L (theta)', selectedPairNames);
 
 %

@@ -1,5 +1,5 @@
 function PlotEEG(eegData, channelNameArray, Fs, title )
-eegDataT = eegData.';
+eegDataT = eegData;
 
 % sampling frequency; data is sampled at 512 Hz
 total_duration = length(eegDataT(1,:))/Fs;

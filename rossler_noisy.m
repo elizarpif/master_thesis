@@ -16,7 +16,7 @@ L_YX_mean = zeros(size(couplingX_values));
 L_XY_mean = zeros(size(couplingX_values));
 R_mean = zeros(size(couplingX_values));
 
-noise_levels = 1:5;
+noise_levels = 9;
 
 L_YX_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
 L_XY_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
@@ -25,7 +25,9 @@ R_noisy_coupling_mean = zeros(length(noise_levels), length(couplingX_values));
 
 %% Main loop over coupling strengths
 
-for noise_level = noise_levels
+for index = 1:length(noise_levels)
+    noise_level = noise_levels(index);
+
     for idx = 1:length(couplingX_values)
         couplingX = couplingX_values(idx);
 
@@ -48,7 +50,7 @@ for noise_level = noise_levels
             x = add_measurement_noise(x_original, l);
             y = add_measurement_noise(y_original, l);
 
-            % plot_x1_vs_noisy_x1(x_original, x, tx, sprintf("level = %d", l));
+            plot_x1_vs_noisy_x1(x_original, x, tx, sprintf("level = %d", l));
 
             datarec = [x; y]';
 
@@ -73,9 +75,9 @@ for noise_level = noise_levels
         log(sprintf("mean metric computed for E_x = %f, noise level = %d", couplingX, noise_level))
     end
 
-    L_XY_noisy_coupling_mean(noise_level,:) = L_XY_mean;
-    L_YX_noisy_coupling_mean(noise_level,:) = L_YX_mean;
-    R_noisy_coupling_mean(noise_level,:) = R_mean;
+    L_XY_noisy_coupling_mean(index,:) = L_XY_mean;
+    L_YX_noisy_coupling_mean(index,:) = L_YX_mean;
+    R_noisy_coupling_mean(index,:) = R_mean;
 
     log(sprintf("mean metric computed for noise level = %d", noise_level))
 end
@@ -85,61 +87,75 @@ end
 % Combined plot for mean metrics
 % couplingX_values, L_XY_mean-L_YX_mean, 'c', ...
 
-% figure;
-% plot(couplingX_values, R_noisy_coupling_mean(1,:), 'b', ...
-%     couplingX_values, R_noisy_coupling_mean(2,:), 'r', ...
-%     couplingX_values, R_noisy_coupling_mean(3,:), 'g', ...
-%         couplingX_values, R_noisy_coupling_mean(4,:), 'm', ...
-%     couplingX_values, R_noisy_coupling_mean(5,:), 'c', ...
-%     'LineWidth', 1);
-% legend('R noise level=1', 'R noise level=2', ...
-%     'R noise level=3', 'R noise level=4', 'R noise level=5');
-% xlabel('Coupling E_x');
-% ylabel('Mean metric value');
-% title('');
-% grid on;
-% 
-% figure;
-% plot(couplingX_values, L_XY_noisy_coupling_mean(1,:), 'b', ...
-%     couplingX_values, L_XY_noisy_coupling_mean(2,:), 'r', ...
-%     couplingX_values, L_XY_noisy_coupling_mean(3,:), 'g', ...
-%         couplingX_values, L_XY_noisy_coupling_mean(4,:), 'm', ...
-%     couplingX_values, L_XY_noisy_coupling_mean(5,:), 'c', ...
-%     'LineWidth', 1);
-% legend('L(X|Y) noise level=1', 'L(X|Y) noise level=2', ...
-%     'L(X|Y) noise level=3', 'L(X|Y) noise level=4', 'L(X|Y) noise level=5');
-% xlabel('Coupling E_x');
-% ylabel('Mean metric value');
-% title('');
-% grid on;
+figure;
+ax = axes; % Create axes object
+plot(couplingX_values, R_noisy_coupling_mean(1,:), 'b', ...
+    couplingX_values, R_noisy_coupling_mean(2,:), 'r', ...
+    couplingX_values, R_noisy_coupling_mean(3,:), 'g', ...
+        couplingX_values, R_noisy_coupling_mean(4,:), 'm', ...
+    couplingX_values, R_noisy_coupling_mean(5,:), 'c', ...
+    'LineWidth', 1);
+legend('R noise level=1', 'R noise level=3', ...
+    'R noise level=5', 'R noise level=7', 'R noise level=9','Location', 'eastoutside');
+xlabel('Coupling E_x');
+ylabel('R metric value');
+title('');
+grid on;
+set(ax, 'Position', [0.1, 0.1, 0.65, 0.85]);  % Adjust these values as needed
+
 
 figure;
+ax = axes; % Create axes object
+plot(couplingX_values, L_XY_noisy_coupling_mean(1,:), 'b', ...
+    couplingX_values, L_XY_noisy_coupling_mean(2,:), 'r', ...
+    couplingX_values, L_XY_noisy_coupling_mean(3,:), 'g', ...
+        couplingX_values, L_XY_noisy_coupling_mean(4,:), 'm', ...
+    couplingX_values, L_XY_noisy_coupling_mean(5,:), 'c', ...
+    'LineWidth', 1);
+legend('L(X|Y) noise level=1', 'L(X|Y) noise level=3', ...
+    'L(X|Y) noise level=5', 'L(X|Y) noise level=7', 'L(X|Y) noise level=9','Location', 'eastoutside');
+xlabel('Coupling E_x');
+ylabel('Mean L(X|Y) metric value');
+title('');
+grid on;
+set(ax, 'Position', [0.1, 0.1, 0.65, 0.85]);  % Adjust these values as needed
+
+figure;
+ax = axes; % Create axes object
 plot(couplingX_values, L_YX_noisy_coupling_mean(1,:), 'b', ...
     couplingX_values, L_YX_noisy_coupling_mean(2,:), 'r', ...
     couplingX_values, L_YX_noisy_coupling_mean(3,:), 'g', ...
         couplingX_values, L_YX_noisy_coupling_mean(4,:), 'm', ...
     couplingX_values, L_YX_noisy_coupling_mean(5,:), 'c', ...
     'LineWidth', 1);
-legend('L(Y|X) noise level=1', 'L(Y|X) noise level=2', ...
-    'L(Y|X) noise level=3', 'L(Y|X) noise level=4', 'L(Y|X) noise level=5');
+legend('L(Y|X) noise level=1', 'L(Y|X) noise level=3', ...
+    'L(Y|X) noise level=5', 'L(Y|X) noise level=7', 'L(Y|X) noise level=9', 'Location', 'eastoutside');
+xlabel('Coupling E_x');
+ylabel('Mean L(Y|X) metric value');
+title('');
+grid on;
+set(ax, 'Position', [0.1, 0.1, 0.65, 0.85]);  % Adjust these values as needed
+
+
+figure;
+ax = axes; % Create axes object
+plot(couplingX_values, L_XY_noisy_coupling_mean(1,:)-L_YX_noisy_coupling_mean(1,:), 'b', ...
+    couplingX_values, L_XY_noisy_coupling_mean(2,:)-L_YX_noisy_coupling_mean(2,:), 'r', ...
+    couplingX_values, L_XY_noisy_coupling_mean(3,:)-L_YX_noisy_coupling_mean(3,:), 'g', ...
+    couplingX_values, L_XY_noisy_coupling_mean(4,:)-L_YX_noisy_coupling_mean(4,:), 'm', ...
+    couplingX_values, L_XY_noisy_coupling_mean(5,:)-L_YX_noisy_coupling_mean(5,:), 'c', ...
+    'LineWidth', 1);
+legend('deltaL noise level=1', 'deltaL noise level=3', ...
+    'deltaL noise level=5', 'deltaL noise level=7', 'deltaL noise level=9', ...
+    'Location', 'eastoutside');
 xlabel('Coupling E_x');
 ylabel('Mean L(X|Y)-L(Y|X) metric value');
 title('');
 grid on;
 
-figure;
-plot(couplingX_values, L_XY_noisy_coupling_mean(1,:)-L_YX_noisy_coupling_mean(1,:), 'b', ...
-    couplingX_values, L_XY_noisy_coupling_mean(2,:)-L_YX_noisy_coupling_mean(2,:), 'r', ...
-    couplingX_values, L_XY_noisy_coupling_mean(3,:)-L_YX_noisy_coupling_mean(3,:), 'g', ...
-        couplingX_values, L_XY_noisy_coupling_mean(4,:)-L_YX_noisy_coupling_mean(4,:), 'm', ...
-    couplingX_values, L_XY_noisy_coupling_mean(5,:)-L_YX_noisy_coupling_mean(5,:), 'c', ...
-    'LineWidth', 1);
-legend('deltaL noise level=1', 'deltaL noise level=2', ...
-    'deltaL noise level=3', 'deltaL noise level=4', 'deltaL noise level=5');
-xlabel('Coupling E_x');
-ylabel('Mean L(X|Y)-L(Y|X) metric value');
-title('');
-grid on;
+% Adjust the axes to use more horizontal space
+set(ax, 'Position', [0.1, 0.1, 0.65, 0.85]);  % Adjust these values as needed
+
 % figure;
 % plot(couplingX_values, L_XY_noisy_coupling_mean(2,:), 'b', ...
 %     couplingX_values, L_YX_noisy_coupling_mean(2,:), 'r', ...
@@ -404,10 +420,10 @@ figure;
 plot( t(end-200:end), x_res(end-200:end), 'b', ...
     t(end-200:end), y_res(end-200:end), 'r' ...
     ); % 'b' и 'r' задают цвета кривых
-xlabel('Time');
+xlabel('Time [a.u.]');
 ylabel('Values');
 xlim([t(end-200), t(end)]);
-legend('x_1', 'noisy x_1');
+legend('x_1', 'noisy x_1', 'Location','eastoutside');
 title(sprintf('Rossler: x_1 and noisy x_1, %s', titlePlot));
 grid on;
 

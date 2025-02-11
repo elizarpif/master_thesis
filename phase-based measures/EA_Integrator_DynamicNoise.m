@@ -2,7 +2,7 @@ function [x, times] = EA_Integrator_DynamicNoise(deriv,d,N,dt,inicond,Ex,Ey, sqr
 % Integration using Euler for pair dynamics where the noise is dimensions 1 and 2 (see
 % equations from manuscript)
 % INPUTS:
-%        -  deriv: specifies the script of the derivative, e.g. @RosslerODE_bi
+%        - deriv: specifies the script of the derivative, e.g. @RosslerODE_bi
 %        - d: dimension
 %        - N: Number of datapoints
 %        - dt: time step

@@ -12,16 +12,26 @@ time_vector = 0:Ts:total_duration;
 channelNameArray = data.channelNameArray;
 numChannels = length(channelNameArray); % Number of EEG channels
 
-bandName = "alpha";
-newFs = Fs/2;
+bandName = "delta";
 
-downsampledEEGData = downsampleEEGData(eegDataOriginal, Fs, 2);
+downsamplingFactor = 1;
+newFs = Fs/downsamplingFactor;
+
+downsampledEEGData = downsampleEEGData(eegDataOriginal, Fs, downsamplingFactor);
 filteredEEGData = filterEEGByBand(downsampledEEGData, newFs, bandName);
 
-% PlotEEG(filteredEEGData', channelNameArray, newFs, "alpha");
+% figure;
+% [pxx, f] = periodogram(filteredEEGData(45,:), [], [], Fs);
+% plot(f, 10*log10(pxx), 'b'); 
+% title('Periodogram');
+% xlabel('Frequency (Hz)');
+% ylabel('Power (dB/Hz)');
+% grid on;
+
+% PlotEEG(filteredEEGData, channelNameArray, newFs, bandName);
 
 % Set interval jump for processing
-intervalJump = 10240 / 2; % because of the downsampling
+intervalJump = 10240 / downsamplingFactor; % because of the downsampling
 totalIntervals = floor(length(filteredEEGData) / intervalJump);
 
 % Initialize overall storage for metrics
@@ -32,8 +42,12 @@ R_all = zeros(numPairs, totalIntervals);
 
 intervalIndex = 0; % Initialize interval index
 
+% FOR NOW DON't include the last piece (it is 3 seconds)
+% because I don't know how to put it on the plot and how to measure the end
+% of the seizure (only approximately?)
+
 % Process each interval of EEG data
-for interval = intervalJump:intervalJump:length(filteredEEGData)
+for interval = 0:intervalJump:length(filteredEEGData)
     if interval > length(filteredEEGData)
         disp('Break: Interval exceeds data length')
         break;
@@ -43,7 +57,7 @@ for interval = intervalJump:intervalJump:length(filteredEEGData)
     intervalIndex = intervalIndex + 1;
 
     % Calculate indices for the current slice of data
-    l = interval;
+    l = interval+1;
     r = min(interval + intervalJump, length(filteredEEGData));  % Ensure r does not exceed data length
 
 
@@ -61,7 +75,7 @@ for interval = intervalJump:intervalJump:length(filteredEEGData)
     % Compute metrics L and R for each pair
     for idx = 1:numPairs
         % Compute L metric
-        res = computeLMetric(selectedPairs{idx});
+        res = computeLMetric(selectedPairs{idx}, downsamplingFactor);
         L_XY_all(idx, intervalIndex) = res(1);
         L_YX_all(idx, intervalIndex) = res(2);
 
@@ -69,15 +83,20 @@ for interval = intervalJump:intervalJump:length(filteredEEGData)
         R_all(idx, intervalIndex) = computeRMetric(selectedPairs{idx});
     end
     % Log processing completion
-    logger(sprintf("Processing completed for interval [%d, %d]", interval-intervalJump, interval));
+    logger(sprintf("Processing completed for interval [%d, %d]", l, r));
 end
 
-timePoints = (intervalJump:intervalJump:length(filteredEEGData)) / newFs;
+timePoints = (0:intervalJump:length(filteredEEGData)) / newFs;
+% Ensure the last time point is included
+% finalTime = length(filteredEEGData) / newFs;
+% if timePoints(end) < finalTime
+%     timePoints = [timePoints, finalTime];
+% end
 
 eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, newFs, sprintf("L_{XY} (%s)", bandName),selectedPairNames);
-eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, sprintf("L_{YX} (%s)", bandName),selectedPairNames);
+% eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, sprintf("L_{YX} (%s)", bandName),selectedPairNames);
 eegImagescResult(timePoints, R_all, numPairs, intervalJump, newFs, sprintf("R (%s)", bandName),selectedPairNames);
-eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, sprintf("delta L (%s)", bandName), selectedPairNames);
+% eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, sprintf("delta L (%s)", bandName), selectedPairNames);
 % eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, sprintf("abs delta L (%s)", bandName), selectedPairNames);
 
 %

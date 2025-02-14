@@ -5,29 +5,29 @@ eegDataOriginal = data.EEG';
 % Define sampling frequency and time vector
 Fs = 512; % Sampling frequency (Hz)
 
-% figure;
-% [pxx, f] = periodogram(eegDataOriginal(5,1:10240*9), [], [], Fs);
-% plot(f, 10*log10(pxx), 'b'); 
-% title('Periodogram - Original (512 Hz)');
-% xlabel('Frequency (Hz)');
-% ylabel('Power (dB/Hz)');
-% grid on;
-
 % Channel information
 sample = eegDataOriginal(1:2, 10240*9:10240*10-1);
 numChannels = 2;
 
-downsampledBy2 = downsampleEEGData(sample, numChannels, Fs, 2);
-downsampledBy4 = downsampleEEGData(sample, numChannels, Fs, 4);
+downsampledBy2 = downsampleEEGData(sample, Fs, 2);
+downsampledBy4 = downsampleEEGData(sample, Fs, 4);
 
 
+L4 = computeLMetric(downsampledBy4',4);
+R4 = computeRMetric(downsampledBy4');
 
-% Define new sampling frequencies after downsampling
-Fs2 = Fs / 2; % 256 Hz
-Fs4 = Fs / 4; % 128 Hz
+L = computeLMetric(sample', 1);
+R = computeRMetric(sample');
 
 
+L2 = computeLMetric(downsampledBy2',2);
+R2 = computeRMetric(downsampledBy2');
 
+disp(['R: 512Hz -> 256Hz, difference = ', num2str(L-L2)]);
+disp(['L: 512Hz -> 256Hz, difference = ', num2str(R-R2)]);
+
+disp(['R: 512Hz -> 128Hz, difference = ', num2str(L-L4)]);
+disp(['L: 512Hz -> 128Hz, difference = ', num2str(R-R4)]);
 
 % % Compute and plot periodograms
 % figure;

@@ -1,12 +1,13 @@
 function eegImagescResult(timePointNames, pairsValues, numPairs, ...
-    percentEndSeizureLocation, metricName, selectedPairNames)
+    percentEndSeizureLocation, metricName, selectedPairNames, colorbarMin, colorbarMax)
 
     % Adjust x-ticks
     xValues = 1:size(pairsValues, 2);
 
-    figure;
+    % figure;
     imagesc(xValues, 1:numPairs, pairsValues);
     colorbar;
+    caxis([colorbarMin colorbarMax]);
     title(sprintf('%s Metrics Over Time', metricName));
     xlabel('Time (s)');
     ylabel('Pair Index');

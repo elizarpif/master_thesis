@@ -4,7 +4,7 @@ function eegImagescResultMask(timePointNames, pairsValues, numPairs, ...
     % Adjust x-ticks
     xValues = 1:size(pairsValues, 2);
 
-    figure;
+    % figure;
     imagesc(xValues, 1:numPairs, pairsValues);
     colorbar;
     caxis([colorbarMin colorbarMax]);

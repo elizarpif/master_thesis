@@ -1,3 +1,13 @@
+function filteredEEG = filterAllEEGByBand(eegData, newFs, bandname)
+numChannels = size(eegData, 1);
+filteredEEG = zeros(numChannels, length(eegData));
+
+for i = 1:numChannels
+    channelData = eegData(i, :);
+    filteredEEG(i, :) = filterByBand(channelData, newFs, bandname);
+end
+end
+
 function filteredEEGData = filterByBand(eegData, Fs, bandname)
 band = [0.5 256];
 

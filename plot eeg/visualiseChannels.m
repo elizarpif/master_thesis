@@ -9,11 +9,17 @@ function visualiseChannels( x, y, channelNameArray, plotTitle )
     y_center = linspace(-interval, interval, nChan);
     
     % % Define a colormap for the channels
-    color_template = [0 100 0;
-                       0 200 0;
-                       0 300 0;
-                       100 0 100;
-                       100 0 200] * 0.001;
+    % color_template = [0 100 0;
+    %                    0 200 0;
+    %                    0 300 0;
+    %                    100 0 100;
+    %                    100 0 200] * 0.001;
+
+    color_template = [0 0 0;
+                  0 0 0;
+                  0 0 0;
+                  0 0 0;
+                  0 0 0];
     c_space = repmat(color_template, [ceil(nChan/size(color_template, 1)), 1]);
 
     % Main plot

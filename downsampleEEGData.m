@@ -17,7 +17,7 @@ order = 8; % selected this order as an example
 
 numChannels = size(eegDataOriginal, 1);
 
-% Downsample data and filter by band
+% Downsample data
 downsampledEEGData = zeros(numChannels, size(eegDataOriginal, 2) / downsamplingFactor);
 
 for i = 1:numChannels

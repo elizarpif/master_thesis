@@ -14,9 +14,8 @@ newFs = Fs/downsamplingFactor;
 downsampledEEGData = downsampleEEGData(eegDataOriginal, Fs, downsamplingFactor);
 lengthData = length(downsampledEEGData);
 
-PlotEEG(filterAllEEGByBand(downsampledEEGData,newFs,"theta"), ...
-    data.channelNameArray, newFs, sprintf("pat 16, part 1 (\\theta)"));
-
+% PlotEEG(filterAllEEGByBand(downsampledEEGData,newFs,"theta"), ...
+%     data.channelNameArray, newFs, sprintf("pat 16, part 1 (\\theta)"));
 
 % Channel information
 channelNameArray = data.channelNameArray;
@@ -28,9 +27,9 @@ numPairs = floor(numChannels / 2);
 
 bands = ["alpha", "beta", "theta", "delta"];
 
-L_XY_all = zeros(length(bands), numPairs, totalIntervals);
-L_YX_all = zeros(length(bands), numPairs, totalIntervals);
-R_all = zeros(length(bands), numPairs, totalIntervals);
+% L_XY_unfiltered = zeros(numPairs, totalIntervals);
+% L_YX_unfiltered = zeros(length(bands), numPairs, totalIntervals);
+% R_unfiltered = zeros(numPairs, totalIntervals);
 
 selectedPairs = cell(1, numPairs);
 selectedPairNames = strings(numPairs, 1);
@@ -42,10 +41,11 @@ for idx = 1:numPairs
     selectedPairNames(idx) = sprintf('%s-%s', channelNameArray{eegIdx}, channelNameArray{eegIdx + 1});
 end
 
-for bandIndex = 4
-    logger(sprintf("started for %s", bands(bandIndex)));
+% for bandIndex = 4
+    % logger(sprintf("started for %s", bands(bandIndex)));
 
-    selectedFilteredPairs = filterEEGByBand(selectedPairs, newFs, bands(bandIndex));
+    % selectedFilteredPairs = filterEEGByBand(selectedPairs, newFs, bands(bandIndex));
+    selectedFilteredPairs = selectedPairs;
 
     intervalIndex = 1;
 
@@ -57,22 +57,22 @@ for bandIndex = 4
             pair = selectedFilteredPairs{idx}(:, l:r);
             L = computeLMetric(pair, downsamplingFactor);
 
-            L_XY_all(bandIndex, idx, intervalIndex) = L(1);
-            L_YX_all(bandIndex, idx, intervalIndex) = L(2);
-            R_all(bandIndex, idx, intervalIndex) = computeRMetric(pair);
+            L_XY_unfiltered(idx, intervalIndex) = L(1);
+            % L_YX_all(bandIndex, idx, intervalIndex) = L(2);
+            R_unfiltered(idx, intervalIndex) = computeRMetric(pair);
         end
 
         intervalIndex = intervalIndex + 1;
         logger(sprintf("Processed interval [%d, %d]", l, r));
     end
-end
+% end
 
 
-% timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
-% percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
-% 
-% save("pat16_part1_results.mat",'L_XY_all', 'R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
-% 
+timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
+percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
+
+save("pat16_part1_results_unfiltered.mat",'L_XY_unfiltered', 'R_all_unfiltered', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
+
 % L_XY_all_alpha = squeeze(L_XY_all(1, :, :));
 % L_XY_all_beta = squeeze(L_XY_all(2, :, :));
 % R_all_alpha = squeeze(R_all(1, :, :));

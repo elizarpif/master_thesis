@@ -1,10 +1,14 @@
-function filteredEEG = filterEEGByBand(eegData, newFs, bandname)
-numChannels = size(eegData, 1);
-filteredEEG = zeros(numChannels, length(eegData));
+function selectedFilteredPairs = filterEEGByBand(selectedPairs, Fs, bandName)
 
-for i = 1:numChannels
-    channelData = eegData(i, :);
-    filteredEEG(i, :) = filterByBand(channelData, newFs, bandname);
+numPairs = length(selectedPairs);
+
+selectedFilteredPairs = cell(1, numPairs);
+
+for i = 1:numPairs
+    channelData1 = filterByBand(selectedPairs{i}(1,:), Fs, bandName);
+    channelData2 = filterByBand(selectedPairs{i}(2,:), Fs, bandName);
+
+    selectedFilteredPairs{i} = [channelData1; channelData2];
 end
 end
 

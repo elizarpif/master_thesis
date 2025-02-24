@@ -1,11 +1,9 @@
-load('pat16_part1_results.mat');
 
-% % % %
 
-bands = ["alpha", "beta", "theta", "delta"];
+% bands = ["alpha", "beta", "theta", "delta"];
 
 % === Define band comparisons ===
-comparisons = [3, 1; 1, 2]; % [theta-alpha; alpha-beta]
+% comparisons = [3, 1; 1, 2]; % [theta-alpha; alpha-beta]
 
 % for i = 1:size(comparisons, 1)
 %     band1 = comparisons(i, 1);
@@ -57,17 +55,17 @@ comparisons = [3, 1; 1, 2]; % [theta-alpha; alpha-beta]
 % end
 
 % === Compare L and R metrics within the same band ===
-for bandIndex = 4
-    L_XY_band = squeeze(L_XY_all(bandIndex, :, :));
-    R_all_band = squeeze(R_all(bandIndex, :, :));
-
-    diffMask = abs(L_XY_band - R_all_band) > 0.3;
-    if bandIndex == 4
-        diffMask = abs(L_XY_band - R_all_band) > 0.4;
-    end
-
-    colorbarMin = min([min(L_XY_band(:)), min(R_all_band(:))]);
-    colorbarMax = max([max(L_XY_band(:)), max(R_all_band(:))]);
+% for bandIndex = 4
+%     L_XY_band = squeeze(L_XY_all(bandIndex, :, :));
+%     R_all_band = squeeze(R_all(bandIndex, :, :));
+% 
+%     diffMask = abs(L_XY_band - R_all_band) > 0.3;
+%     if bandIndex == 4
+%         diffMask = abs(L_XY_band - R_all_band) > 0.4;
+%     end
+% 
+%     colorbarMin = min([min(L_XY_band(:)), min(R_all_band(:))]);
+%     colorbarMax = max([max(L_XY_band(:)), max(R_all_band(:))]);
 
     % eegImagescResultMask(timePointNames, L_XY_band, numPairs, ...
     %     percentEndSeizureLocation, sprintf("L_{XY} (vs R) (%s)", bands(bandIndex)), ...
@@ -98,4 +96,4 @@ for bandIndex = 4
     %
     % close(fig);
 
-end
+% end

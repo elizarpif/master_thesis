@@ -18,5 +18,6 @@ if downsamplingFactor ~= 1
 end
 
 res = HSLMNCom(data, m, tau, k, theiler_correction);
-Lmetric = res(2,:);
+% make a flip left-right, because I use 1st value as X|Y
+Lmetric = fliplr(res(2,:));
 end

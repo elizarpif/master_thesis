@@ -1,6 +1,6 @@
 # master_thesis
 
-## organization structure
+## Folders structure
 `dataset` contains the Bern dataset;
 
 `eeg analysis` contains all scripts for eeg analysis;

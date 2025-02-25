@@ -9,7 +9,10 @@
 % timePointNames = timePointNames(1:end-1);
 
 bands = ["alpha", "beta", "theta", "delta"];
-selected_band = 3; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
+selected_band = 2; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
+
+L_selected = squeeze(L_XY_all(selected_band, :, :));
+R_selected = squeeze(R_all(selected_band, :, :));
 
 num_pairs = size(L_selected, 1);
 num_times = size(L_selected, 2);
@@ -39,13 +42,11 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
     pair_idx = find(scatter_handles == event_obj.Target, 1);
     time_idx = event_obj.DataIndex;
     
-    pos = get(event_obj, 'Position');
-    disp(pos(1))
-    disp(pair_idx)
     % logger("pair %d time idx %d pos %f %f", pair_idx, time_idx, pos(1), pos(2));
     if ~isempty(pair_idx) && ~isempty(time_idx)
         output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                      sprintf('Time interval: %s', timePointNames{time_idx})};
+                      sprintf('Time interval: %d', time_idx*20-20)};
+        logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
     else
         output_txt = {'No data found'};
     end

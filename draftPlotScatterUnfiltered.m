@@ -1,45 +1,42 @@
 % load('pat16_part1_results.mat');
 
-[~, pairCount, timeCount] = size(L_XY_unfiltered);
-
 % Extract the data for the selected band
 L_selected = L_XY_unfiltered(:,1:end-1);  % Shape: (pairCount, timeCount)
 R_selected = R_unfiltered(:,1:end-1);  % Shape: (pairCount, timeCount)
 
-% Create scatter plot with individual pairs
+num_pairs = size(L_selected, 1);
+num_times = size(L_selected, 2);
+
 figure;
 hold on;
-colors = lines(pairCount); % Generate distinct colors
+colors = lines(num_pairs);
+scatter_handles = gobjects(num_pairs, 1); % сохраним scatter-объекты
 
-for pair_idx = 1:pairCount
-    % 20 - size of a marker
-    scatter(L_selected(pair_idx, :), R_selected(pair_idx, :), 20, colors(pair_idx, :), 'filled');
+for pair_idx = 1:num_pairs
+    scatter_handles(pair_idx) = scatter(L_selected(pair_idx, :), R_selected(pair_idx, :),...
+        20, colors(pair_idx, :), 'filled');
 end
 
 xlabel('Metric L');
 ylabel('Metric R');
-title('Scatter Plot of Metric L vs Metric R (unfiltered)');
+title('Scatter Plot L vs R (unfiltered)');
 grid on;
-legend_labels = arrayfun(@(x) selectedPairNames(x), 1:pairCount, 'UniformOutput', false);
-legend(legend_labels, 'Location', 'eastoutside'); % Move legend outside
-
-
+legend(selectedPairNames, 'Location', 'eastoutside');
 hold off;
 
-
+% Подключаем Data Cursor
 dcm = datacursormode(gcf);
-set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, L_selected, R_selected, selectedPairNames,timePointNames));
+set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, scatter_handles, selectedPairNames));
 
-% Custom function to display pair and time when clicking on a point
-function output_txt = displayPointInfo(event_obj, ...
-    L_selected, R_selected, selectedPairNames, timePointNames)
-    pos = get(event_obj, 'Position'); % Get (L, R) position
-
-    % Find the closest matching (L, R) point in the dataset
-    [pair_idx, time_idx] = find(L_selected == pos(1) & R_selected == pos(2), 1);
+function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairNames)
+    pair_idx = find(scatter_handles == event_obj.Target, 1);
+    time_idx = event_obj.DataIndex;
     
-    if ~isempty(pair_idx)
-        output_txt = {sprintf('Pair: %s', selectedPairNames(pair_idx)), sprintf('Time interval: %s', timePointNames(time_idx))};
+    % logger("pair %d time idx %d pos %f %f", pair_idx, time_idx, pos(1), pos(2));
+    if ~isempty(pair_idx) && ~isempty(time_idx)
+        output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
+                      sprintf('Time interval: %d', time_idx*20-20)};
+        logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
     else
         output_txt = {'No data found'};
     end

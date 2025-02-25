@@ -48,17 +48,14 @@ for bandIndex = 1:length(bands)
     intervalIndex = 1; % Initialize interval index
 
     % Process each interval of EEG data
-    for interval = 0:intervalJump:lengthData
-        if interval > lengthData
-            disp('Break: Interval exceeds data length')
-            break;
-        end
+    for interval = intervalJump:intervalJump:lengthData
 
-        % Calculate indices for the current slice of data
-        l = interval+1;
-        r = min(interval + intervalJump, lengthData);  % Ensure r does not exceed data length
-
+        % r = 2560 (20), 5120 (40), 60 ..., 440
+        r = interval;
+        % l = 1 (0), 2561 (20), 40..., 420
+        l = interval-intervalJump+1; 
         % Compute metrics L and R for each pair
+
         for idx = 1:numPairs
             pair = selectedFilteredPairs{idx}(:,l:r);
 
@@ -76,15 +73,25 @@ for bandIndex = 1:length(bands)
     end
 end
 
-timePoints = (0:intervalJump:lengthData) / newFs;
-L_XY_all_alpha = L_XY_all(1,:,:);
+timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
+% ["20","40",..,"440"]
+percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
 
 save("pat16_part1_results.mat",'L_XY_all', 'R_all', 'numPairs', 'intervalJump', 'newFs', 'timePoints', 'selectedPairNames');
 
-% eegImagescResult(timePoints, L_XY_all, numPairs, intervalJump, newFs, sprintf("L_{XY} (%s)", bandName),selectedPairNames);
-% eegImagescResult(timePoints, L_YX_all, numPairs, intervalJump, newFs, sprintf("L_{YX} (%s)", bandName),selectedPairNames);
-% eegImagescResult(timePoints, R_all, numPairs, intervalJump, newFs, sprintf("R (%s)", bandName),selectedPairNames);
-% eegImagescResult(timePoints, (L_XY_all - L_YX_all), numPairs, intervalJump, newFs, sprintf("delta L (%s)", bandName), selectedPairNames);
-% eegImagescResult(timePoints, abs(L_XY_all - L_YX_all), numPairs, intervalJump, newFs, sprintf("abs delta L (%s)", bandName), selectedPairNames);
+% % save("pat16_part1_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
 
-%
+% L_XY_all_alpha = squeeze(L_XY_all(1, :, :));
+% L_XY_all_beta = squeeze(L_XY_all(2, :, :));
+% R_all_alpha = squeeze(R_all(1, :, :));
+
+% colorbarMin = min([min(L_XY_all_alpha(:)), min(L_XY_all_beta(:))]);
+% colorbarMax = max([max(L_XY_all_alpha(:)), max(L_XY_all_beta(:))]);
+% 
+% eegImagescResultMask(timePointNames, L_XY_all_alpha, numPairs, ...
+%     percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(1)), ...
+%     selectedPairNames, differenceMask, colorbarMin, colorbarMax);
+% eegImagescResultMask(timePointNames, L_XY_all_beta, numPairs, ...
+%     percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(2)), ...
+%     selectedPairNames, differenceMask, colorbarMin, colorbarMax)
+

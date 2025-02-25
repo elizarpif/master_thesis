@@ -10,8 +10,8 @@ for pair_idx = 1:num_pairs
 end
 
 % Вывод корреляций по каждой паре
-disp('Корреляции по парам:');
-disp(corr_values);
+% disp('Корреляции по парам:');
+% disp(corr_values);
 
 % Визуализация корреляции по каждой паре
 figure;

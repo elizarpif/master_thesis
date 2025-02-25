@@ -6,3 +6,7 @@ Channel\ types\ Data \EEG
 drafts
 *.asv
 *.mat
+moving\ window\ analysis
+noise\ free\ rossler\ figures
+noisy\ rossler\ figures
+

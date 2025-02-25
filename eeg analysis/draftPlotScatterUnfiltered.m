@@ -1,8 +1,7 @@
-% load('pat16_part1_results.mat');
+% load('pat16_part1_results_unfiltered.mat');
 
-% Extract the data for the selected band
-L_selected = L_XY_unfiltered(:,1:end-1);  % Shape: (pairCount, timeCount)
-R_selected = R_unfiltered(:,1:end-1);  % Shape: (pairCount, timeCount)
+L_selected = L_XY_unfiltered;
+R_selected = R_unfiltered;  
 
 num_pairs = size(L_selected, 1);
 num_times = size(L_selected, 2);

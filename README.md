@@ -12,4 +12,4 @@
 `rossler` contails all acripts for the analysis under controlled conditions;
 
 ## Instructions
-Before using functions from folders, it is necessary to add it to Path. Better to choose "Context menu -> Add Files To Path -> Selected Folders and Subfolders`
+Before using functions from folders, it is necessary to add it to Path. Better to choose *"Context menu -> Add Files To Path -> Selected Folders and Subfolders"*

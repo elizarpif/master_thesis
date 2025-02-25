@@ -1,4 +1,4 @@
-data = load("bern dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+data = load("dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
 eegDataOriginal = data.EEG';
 
 Fs = 512; 

@@ -1,4 +1,4 @@
-% load('pat16_part1_results_unfiltered.mat');
+load('pat16_part1_results_unfiltered.mat');
 
 L_selected = L_XY_unfiltered;
 R_selected = R_unfiltered;  
@@ -34,7 +34,7 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
     % logger("pair %d time idx %d pos %f %f", pair_idx, time_idx, pos(1), pos(2));
     if ~isempty(pair_idx) && ~isempty(time_idx)
         output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                      sprintf('Time interval: %d', time_idx*20-20)};
+                      sprintf('Time interval: %d-%d s', time_idx*20-20, time_idx*20)};
         logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
     else
         output_txt = {'No data found'};

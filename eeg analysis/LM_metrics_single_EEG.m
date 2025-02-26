@@ -1,5 +1,5 @@
 % Load data from file
-data = load("bern dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+data = load("dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
 eegDataOriginal = data.EEG';
 
 % Define sampling frequency and time vector
@@ -77,21 +77,19 @@ timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
 % ["20","40",..,"440"]
 percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
 
-save("pat16_part1_results.mat",'L_XY_all', 'R_all', 'numPairs', 'intervalJump', 'newFs', 'timePoints', 'selectedPairNames');
+save("pat16_part1_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
 
-% % save("pat16_part1_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
+bandIndex = 1;
+L_XY_all_alpha = squeeze(L_XY_all(bandIndex, :, :));
+R_all_alpha = squeeze(R_all(bandIndex, :, :));
 
-% L_XY_all_alpha = squeeze(L_XY_all(1, :, :));
-% L_XY_all_beta = squeeze(L_XY_all(2, :, :));
-% R_all_alpha = squeeze(R_all(1, :, :));
+colorbarMin = min([min(L_XY_all_alpha(:)), min(R_all_alpha(:))]);
+colorbarMax = max([max(L_XY_all_alpha(:)), max(R_all_alpha(:))]);
 
-% colorbarMin = min([min(L_XY_all_alpha(:)), min(L_XY_all_beta(:))]);
-% colorbarMax = max([max(L_XY_all_alpha(:)), max(L_XY_all_beta(:))]);
-% 
-% eegImagescResultMask(timePointNames, L_XY_all_alpha, numPairs, ...
-%     percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(1)), ...
-%     selectedPairNames, differenceMask, colorbarMin, colorbarMax);
-% eegImagescResultMask(timePointNames, L_XY_all_beta, numPairs, ...
-%     percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(2)), ...
-%     selectedPairNames, differenceMask, colorbarMin, colorbarMax)
+eegImagescResult(timePointNames, L_XY_all_alpha, numPairs, ...
+    percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(bandIndex)), ...
+    selectedPairNames, colorbarMin, colorbarMax);
+eegImagescResult(timePointNames, R_all_alpha, numPairs, ...
+    percentEndSeizureLocation, sprintf("R (%s)", bands(bandIndex)), ...
+    selectedPairNames, colorbarMin, colorbarMax)
 

@@ -4,14 +4,10 @@ Ey=0;
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [0.1, 0.2, 0.3, 0.4]; % Coupling strengths
+couplingX_values = [0, logspace(log10(0.01), log10(1), 30)]; % Coupling strengths
 
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
-
-% res = simulateRossler(Ex, Ey, wx, wy);
-% x = downsampleSignal(res(1,:), res(3,:), isPlotX1Y1);
-% y = downsampleSignal(res(2,:), res(3,:), isPlotX1Y1);
 
 % Preallocate results
 L_YX_mean = zeros(size(couplingX_values));
@@ -45,29 +41,6 @@ for idx = 1:length(couplingX_values)
         % Downsample and take only the last half
         [x, tx] = downsampleRosslerSignal(res1(1,:), res1(4,:), false);
         [y, ty] = downsampleRosslerSignal(res1(2,:), res1(4,:), false);
-
-        % % Simulate Rossler systems
-        res2 = simulateRossler(1, Ey, wx, wy);
-
-        % Downsample and take only the last part
-        [x2, tx2] = downsampleRosslerSignal(res2(1,:), res2(4,:), false);
-        [y2, ty2] = downsampleRosslerSignal(res2(2,:), res2(4,:), false);
-        % 
-        % figure;
-        % plot(tx, x, 'b', ty, y, 'r');
-        % ylabel('Values');
-        % xlim([tx(1), tx(250)])
-        % xlabel('Time [a.u.]');
-        % set(gcf,'position',[0,0,600,200])
-        % lgd = legend('x_1', 'y_1', 'AutoUpdate', 'off', 'Location', 'northeastoutside');        % 
-        % % figure;
-        % plot(tx2, x2, 'b', ty2, y2, 'r');
-        % ylabel('Values');
-        % xlim([tx2(1), tx2(250)])
-        % legend('x_1', 'y_1');
-        % set(gcf,'position',[0,0,600,200])
-        % xlabel('Time');
-
         [y_aux, ty_aux] = downsampleRosslerSignal(res1(3,:), res1(4,:), false);
 
         datarec = [x; y]';
@@ -77,12 +50,11 @@ for idx = 1:length(couplingX_values)
 
         logger(sprintf("Ex = %f, run = %d, metric L computed", couplingX, runIdx));
 
-        L_YX_runs(runIdx) = Lmetric(1); % L(Y|X)
-        L_XY_runs(runIdx) = Lmetric(2); % L(X|Y)
+        L_XY_runs(runIdx) = Lmetric(1); % L(X|Y)
+        L_YX_runs(runIdx) = Lmetric(2); % L(Y|X)
 
-        G = computeGMetric(y, y_aux);
-        G_runs(runIdx) = mean(G);
-        logger(sprintf("Ex = %f, run = %d, delta=%f", couplingX, runIdx, mean(G)));
+        G_runs(runIdx) = computeGMetric(y, y_aux);
+        logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G)));
 
         S_runs(runIdx) = computeSMetric(x,y);
         logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
@@ -115,21 +87,21 @@ toc
 % plotMetricResults(couplingX_values, R_all, R_mean, 'R');
 % plotMetricResults(couplingX_values, L_XY_all-L_YX_all, L_XY_mean-L_YX_mean, 'delta L')
 
-figure;
-plot(couplingX_values, G_mean, 'r', ...
-    'LineWidth', 1);
-xlabel('Coupling E_x');
-ylabel('Mean G metric');
-legend('G mean');
-title(sprintf("G metric (generalized sync)"));
-grid on;
-
-figure;
-semilogy(couplingX_values, G_mean, 'r-o', 'LineWidth', 1);
-xlabel('Coupling E_x');
-ylabel("Mean metric");
-title(sprintf("Mean delta between Y and Y\'"));
-grid on;
+% figure;
+% plot(couplingX_values, G_mean, 'r', ...
+%     'LineWidth', 1);
+% xlabel('Coupling E_x');
+% ylabel('Mean G metric');
+% legend('G mean');
+% title(sprintf("G metric (generalized sync)"));
+% grid on;
+% 
+% figure;
+% semilogy(couplingX_values, G_mean, 'r-o', 'LineWidth', 1);
+% xlabel('Coupling E_x');
+% ylabel("Mean metric");
+% title(sprintf("Mean delta between Y and Y\'"));
+% grid on;
 
 % figure;
 % plot(couplingX_values, S_mean, 'r', 'LineWidth', 1);
@@ -172,10 +144,8 @@ grid on;
 end
 
 function G = computeGMetric(y, y_aux)
-    % Compute G metric based on phase difference between y and y_aux
-    phase_y = instantaneous_phase(y);
-    phase_y_aux = instantaneous_phase(y_aux);
-    G = abs(sin((phase_y - phase_y_aux) / 2));
+    % Compute G metric based on the difference between y and y_aux
+    G = mean(abs(y-y_aux));
 end
 
 function S = computeSMetric(x, y)

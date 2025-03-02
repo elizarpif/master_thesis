@@ -1,30 +1,11 @@
-load('pat16_part1_results.mat');
+load('pat16_part1_results_bands.mat');
 
 
 % % % %
-
-% remove last 3 seconds result
-L_XY_all = L_XY_all(:,:,1:end-1);
-R_all = R_all(:,:,1:end-1);
-timePointNames = timePointNames(1:end-1);
-
-L_XY_all_alpha = squeeze(L_XY_all(1, :, :));
-R_all_alpha = squeeze(R_all(1, :, :));
-
-colorbarMin = min([min(L_XY_all_alpha(:)), min(R_all_alpha(:))]);
-colorbarMax = max([max(L_XY_all_alpha(:)), max(R_all_alpha(:))]);
-
-eegImagescResultMask(timePointNames, L_XY_all_alpha, numPairs, ...
-    percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(1)), ...
-    selectedPairNames, differenceMask, colorbarMin, colorbarMax);
-eegImagescResultMask(timePointNames, R_all_alpha, numPairs, ...
-    percentEndSeizureLocation, sprintf("R (%s)", bands(2)), ...
-    selectedPairNames, differenceMask, colorbarMin, colorbarMax)
-
 % 
 
 bands = ["alpha", "beta", "theta", "delta"];
-selected_band = 2; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
+selected_band = 1; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
 
 L_selected = squeeze(L_XY_all(selected_band, :, :));
 R_selected = squeeze(R_all(selected_band, :, :));

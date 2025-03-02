@@ -32,6 +32,18 @@ R_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values)
 G_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
 S_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
 
+%% plot signal versus noisy signal
+% for index = 3
+%     noise_case = noise_levels_SNR{index}{2};
+%     noise_level = noise_levels_SNR{index}{1};
+%     res = simulateRossler(0.12, Ey, wx, wy);
+% 
+%     % Downsample and take only the last half
+%     [x_original, tx] = downsampleRosslerSignal(res(1,:), res(4,:), false);
+%     x_noisy = add_measurement_noise(noise_case, x_original, noise_level);
+% 
+%     plot_x1_vs_noisy_x1(x_original, x_noisy, tx, sprintf("SNR = %d", noise_level),noise_level);
+% end
 
 %% Main loop over coupling strengths
 for index = 1:length(noise_levels_SNR)
@@ -80,9 +92,6 @@ for index = 1:length(noise_levels_SNR)
             S_runs(runIdx) = computeSMetric(x_noisy, y_noisy);
             logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
         end
-
-        % plot signal and noisy signal
-        % plot_x1_vs_noisy_x1(x_original, x_noisy, tx, sprintf("SNR = %d", noise_level));
 
         % Compute mean metrics
         L_YX_mean(idx) = mean(L_YX_runs);
@@ -201,8 +210,8 @@ end
 
 
 %% Plot x1 vs noisy_x1
-function plot_x1_vs_noisy_x1(x_res, y_res, t, titlePlot)
-figure;
+function plot_x1_vs_noisy_x1(x_res, y_res, t, titlePlot, snr)
+f=figure;
 % t, x_res, 'b', ...
 plot( t(end-200:end), x_res(end-200:end), 'b', ...
     t(end-200:end), y_res(end-200:end), 'r' ...
@@ -213,5 +222,7 @@ xlim([t(end-200), t(end)]);
 legend('x_1', 'noisy x_1', 'Location','eastoutside');
 title(sprintf('Rossler: x_1 and noisy x_1, %s', titlePlot));
 grid on;
+
+saveas(f,sprintf("figures/noisy rossler figures/x_vs_x_noisy_SNR_%.1f.jpg", snr));
 
 end

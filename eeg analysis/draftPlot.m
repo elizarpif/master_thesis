@@ -1,4 +1,4 @@
-data = load("bern dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+data = load("dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
 eegDataOriginal = data.EEG';
 
 Fs = 512; 
@@ -7,8 +7,8 @@ Ts = 1 / Fs;
 
 filteredEEGbyBand = eegDataOriginal;
 
-filteredEEGbyBand = filterAllEEGByBand(eegDataOriginal, Fs, "beta");
-PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat 16, part 1 (beta band)"));
+% filteredEEGbyBand = filterAllEEGByBand(eegDataOriginal, Fs, "beta");
+PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat 16, part 1 (unflitered)"));
 
 
 % figure;

@@ -49,25 +49,3 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
 end
 
 
-
-figure;
-
-% Гистограмма для L_selected
-subplot(2,2,1);
-histogram(L_selected(:), 20);
-title('Histogram of L');
-
-% Гистограмма для R_selected
-subplot(2,2,2);
-histogram(R_selected(:), 20);
-title('Histogram of R');
-
-% QQ-Plot для L_selected
-subplot(2,2,3);
-qqplot(L_selected(:));
-title('QQ-Plot of L');
-
-% QQ-Plot для R_selected
-subplot(2,2,4);
-qqplot(R_selected(:));
-title('QQ-Plot of R');

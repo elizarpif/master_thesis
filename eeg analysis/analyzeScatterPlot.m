@@ -52,9 +52,15 @@ function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePoint
     outlier_pairs = pair_indices(outliers);
     outlier_times = time_indices(outliers);
     
+    % Convert time indices to time points
+    timePointNames_outliers = cell(size(outlier_times));
+    for i = 1:length(outlier_times)
+        timePointNames_outliers{i} = timePointNames{mod(outlier_times(i)-1, length(timePointNames)) + 1};
+    end
+    
     % Store outlier information
     outlier_data.Pair = selectedPairNames(outlier_pairs);
-    outlier_data.TimePoint = timePointNames(outlier_times);
+    outlier_data.TimePoint = timePointNames_outliers;
     outlier_data.PairIndex = outlier_pairs;
     outlier_data.TimeIndex = outlier_times;
     outlier_data.L_Value = X(outliers);
@@ -74,9 +80,11 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
     time_idx = event_obj.DataIndex;
     
     if ~isempty(pair_idx) && ~isempty(time_idx)
+        % Map the time index to the correct timePointNames index
+        time_point_idx = mod(time_idx-1, length(timePointNames)) + 1;
         output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                     sprintf('Time point: %s', timePointNames{time_idx})};
-        logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_idx}));
+                     sprintf('Time point: %s', timePointNames{time_point_idx})};
+        logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_point_idx}));
     else
         output_txt = {'No data found'};
     end
@@ -149,31 +157,4 @@ function [outliers, residuals, coeffs] = detectOutliers(X, Y)
     
     % Visualize outliers
     visualizeOutliers(X, Y, outliers, coeffs, 16, 1, pair_indices, {'Pair 1', 'Pair 2'}, {'Time Point 1', 'Time Point 2'});
-end
-
-function visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum, pair_indices, selectedPairNames, timePointNames)
-    % Visualize outliers and regression line
-    % Inputs:
-    %   X - L metric values
-    %   Y - R metric values
-    %   outliers - logical array indicating which points are outliers
-    %   coeffs - coefficients of the polynomial regression
-    %   patientNum - patient number
-    %   seizureNum - seizure number
-    %   pair_indices - indices of pairs for each point
-    %   selectedPairNames - names of channel pairs
-    %   timePointNames - time point names
-    
-    figure;
-    hold on;
-    scatter(X(~outliers), Y(~outliers), 'b', 'filled', 'DisplayName', 'Normal points');
-    scatter(X(outliers), Y(outliers), 'r', 'filled', 'DisplayName', 'Outliers');
-    plot(sort(X), polyval(coeffs, sort(X)), 'k--', 'LineWidth', 2, 'DisplayName', 'Polynomial regression');
-    
-    legend('show');
-    title(sprintf('Outlier Detection (Patient %02d, Seizure %d)', patientNum, seizureNum));
-    xlabel('L metric');
-    ylabel('R metric');
-    grid on;
-    hold off;
 end 

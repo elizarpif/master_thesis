@@ -23,6 +23,8 @@ function [outliers, residuals, coeffs] = detectOutliers(X, Y, degree)
     % 3. Determine outliers (if residual is above 4 standard deviations)
     threshold = 4 * std(residuals);
     outliers = residuals > threshold;
+
+    visualizeOutliers(X,Y, outliers, coeffs, 16, 1);
 end
 
 function visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum)

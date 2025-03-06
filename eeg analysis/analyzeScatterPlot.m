@@ -52,13 +52,15 @@ function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePoint
     outlier_pairs = pair_indices(outliers);
     outlier_times = time_indices(outliers);
     
-    % Map time indices to timePointNames indices
-    timePointIndices = ceil(outlier_times / (num_times/length(timePointNames)));
-    timePointIndices = min(timePointIndices, length(timePointNames)); % Ensure we don't exceed array bounds
+    % Convert time indices to time points
+    timePointNames_outliers = cell(size(outlier_times));
+    for i = 1:length(outlier_times)
+        timePointNames_outliers{i} = timePointNames{mod(outlier_times(i)-1, length(timePointNames)) + 1};
+    end
     
     % Store outlier information
     outlier_data.Pair = selectedPairNames(outlier_pairs);
-    outlier_data.TimePoint = timePointNames(timePointIndices);
+    outlier_data.TimePoint = timePointNames_outliers;
     outlier_data.PairIndex = outlier_pairs;
     outlier_data.TimeIndex = outlier_times;
     outlier_data.L_Value = X(outliers);
@@ -78,10 +80,8 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
     time_idx = event_obj.DataIndex;
     
     if ~isempty(pair_idx) && ~isempty(time_idx)
-        % Map time index to timePointNames index
-        time_point_idx = ceil(time_idx / (length(scatter_handles(1).XData)/length(timePointNames)));
-        time_point_idx = min(time_point_idx, length(timePointNames)); % Ensure we don't exceed array bounds
-        
+        % Map the time index to the correct timePointNames index
+        time_point_idx = mod(time_idx-1, length(timePointNames)) + 1;
         output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
                      sprintf('Time point: %s', timePointNames{time_point_idx})};
         logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_point_idx}));

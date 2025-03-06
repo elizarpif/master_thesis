@@ -1,5 +1,5 @@
 % Load data from file
-data = load("dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+data = load("dataset/100 seizures/Pat16/P16_Sz2_block37.mat");
 eegDataOriginal = data.EEG';
 
 % Define sampling frequency and time vector
@@ -77,7 +77,7 @@ timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
 % ["20","40",..,"440"]
 percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
 
-save("pat16_part1_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
+save("pat16_part2_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
 
 bandIndex = 1;
 L_XY_all_alpha = squeeze(L_XY_all(bandIndex, :, :));

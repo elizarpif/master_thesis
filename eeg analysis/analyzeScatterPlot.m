@@ -45,9 +45,6 @@ function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePoint
     % Detect outliers
     [outliers, residuals, coeffs] = detectOutliers(X, Y);
     
-    % Reshape outliers back to original dimensions
-    outliers_matrix = reshape(outliers, num_pairs, num_times);
-    
     % Create table for outliers
     outlier_data = table();
     
@@ -55,9 +52,13 @@ function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePoint
     outlier_pairs = pair_indices(outliers);
     outlier_times = time_indices(outliers);
     
+    % Map time indices to timePointNames indices
+    timePointIndices = ceil(outlier_times / (num_times/length(timePointNames)));
+    timePointIndices = min(timePointIndices, length(timePointNames)); % Ensure we don't exceed array bounds
+    
     % Store outlier information
     outlier_data.Pair = selectedPairNames(outlier_pairs);
-    outlier_data.TimePoint = timePointNames(outlier_times);
+    outlier_data.TimePoint = timePointNames(timePointIndices);
     outlier_data.PairIndex = outlier_pairs;
     outlier_data.TimeIndex = outlier_times;
     outlier_data.L_Value = X(outliers);
@@ -69,7 +70,7 @@ function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePoint
     writetable(outlier_data, csv_filename);
     
     % Visualize outliers
-    visualizeOutliers(L_selected, R_selected, outliers_matrix, coeffs, patientNum, seizureNum, selectedPairNames, timePointNames);
+    visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum, pair_indices, selectedPairNames, timePointNames);
 end
 
 function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames)
@@ -77,55 +78,49 @@ function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairN
     time_idx = event_obj.DataIndex;
     
     if ~isempty(pair_idx) && ~isempty(time_idx)
+        % Map time index to timePointNames index
+        time_point_idx = ceil(time_idx / (length(scatter_handles(1).XData)/length(timePointNames)));
+        time_point_idx = min(time_point_idx, length(timePointNames)); % Ensure we don't exceed array bounds
+        
         output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                     sprintf('Time point: %s', timePointNames{time_idx})};
-        logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_idx}));
+                     sprintf('Time point: %s', timePointNames{time_point_idx})};
+        logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_point_idx}));
     else
         output_txt = {'No data found'};
     end
 end
 
-function visualizeOutliers(L_selected, R_selected, outliers_matrix, coeffs, patientNum, seizureNum, selectedPairNames, timePointNames)
+function visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum, pair_indices, selectedPairNames, timePointNames)
     % Visualize outliers and regression line with data cursor functionality
     % Inputs:
-    %   L_selected - original L metric matrix
-    %   R_selected - original R metric matrix
-    %   outliers_matrix - logical matrix of outliers (num_pairs x num_times)
+    %   X - L metric values
+    %   Y - R metric values
+    %   outliers - logical array indicating which points are outliers
     %   coeffs - coefficients of the polynomial regression
     %   patientNum - patient number
     %   seizureNum - seizure number
+    %   pair_indices - indices of pairs for each point
     %   selectedPairNames - names of channel pairs
     %   timePointNames - time point names
     
     figure;
     hold on;
-    colors = lines(size(L_selected, 1));
-    scatter_handles = gobjects(size(L_selected, 1), 1);
     
-    % Plot each pair separately
-    for pair_idx = 1:size(L_selected, 1)
-        % Plot non-outlier points for this pair
-        non_outliers = ~outliers_matrix(pair_idx, :);
-        scatter_handles(pair_idx) = scatter(L_selected(pair_idx, non_outliers), ...
-            R_selected(pair_idx, non_outliers), 20, colors(pair_idx,:), 'filled', ...
-            'UserData', pair_idx);
-        
-        % Plot outlier points for this pair
-        outliers = outliers_matrix(pair_idx, :);
-        scatter(L_selected(pair_idx, outliers), R_selected(pair_idx, outliers), ...
-            50, colors(pair_idx,:), 'filled', 'MarkerEdgeColor', 'r', ...
-            'LineWidth', 2, 'UserData', pair_idx);
-    end
+    % Create scatter plots with UserData
+    normal_scatter = scatter(X(~outliers), Y(~outliers), 'b', 'filled', ...
+        'UserData', pair_indices(~outliers));
+    outlier_scatter = scatter(X(outliers), Y(outliers), 'r', 'filled', ...
+        'UserData', pair_indices(outliers));
+    regression_line = plot(sort(X), polyval(coeffs, sort(X)), 'k--', 'LineWidth', 2);
     
-    % Plot regression line
-    X_sorted = sort(L_selected(:));
-    plot(X_sorted, polyval(coeffs, X_sorted), 'k--', 'LineWidth', 2);
+    scatter_handles = [normal_scatter; outlier_scatter];
     
-    xlabel('Metric L');
-    ylabel('Metric R');
+    legend([normal_scatter, outlier_scatter, regression_line], ...
+        {'Normal points', 'Outliers', 'Polynomial regression'}, 'Location', 'best');
     title(sprintf('Outlier Detection (Patient %02d, Seizure %d)', patientNum, seizureNum));
+    xlabel('L metric');
+    ylabel('R metric');
     grid on;
-    legend(scatter_handles, selectedPairNames, 'Location', 'eastoutside');
     
     % Enable Data Cursor
     dcm = datacursormode(gcf);

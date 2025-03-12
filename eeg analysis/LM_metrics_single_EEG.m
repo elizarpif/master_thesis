@@ -22,6 +22,8 @@ intervalJump = 10240 / downsamplingFactor; % because of the downsampling
 totalIntervals = floor(lengthData / intervalJump);
 numPairs = floor(numChannels / 2);
 
+% filteredEEG = filterAllEEGByBand(downsampledEEGData, newFs, "delta");
+PlotEEG(downsampledEEGData, channelNameArray, newFs, "unfiltered");
 bands = ["alpha", "beta", "theta", "delta"];
 
 L_XY_all = zeros(length(bands), numPairs, totalIntervals);
@@ -38,7 +40,7 @@ for idx = 1:numPairs
     selectedPairNames(idx) = sprintf('%s-%s', channelNameArray{eegIdx}, channelNameArray{eegIdx + 1});
 end
 
-for bandIndex = 1:length(bands)
+for bandIndex = 4
     bandName = bands(bandIndex);
 
     logger(sprintf("started for %s", bandName));
@@ -46,6 +48,7 @@ for bandIndex = 1:length(bands)
     selectedFilteredPairs = filterEEGByBand(selectedPairs, newFs, bandName);
 
     intervalIndex = 1; % Initialize interval index
+
 
     % Process each interval of EEG data
     for interval = intervalJump:intervalJump:lengthData

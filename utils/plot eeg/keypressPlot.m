@@ -14,13 +14,19 @@ set(gcf, 'KeyPressFcn', @keypress_callback);
                     % Zoom in by Y
                     ax = findobj(src, 'Type', 'axes');
                     currentYLim = get(ax, 'YLim');
-                    set(ax, 'YLim', currentYLim .* 0.95); % Example: zoom in by 20%
+                    midpoint = mean(currentYLim);
+                    updatedY = (currentYLim - midpoint) * 0.9 + midpoint;
+
+                    set(ax, 'YLim', updatedY); % Example: zoom out by 20%
 
                 case {'subtract', 'hyphen'}
                     % Zoom out by Y
                     ax = findobj(src, 'Type', 'axes');
                     currentYLim = get(ax, 'YLim');
-                    set(ax, 'YLim', currentYLim ./ 0.95); % Example: zoom out by 20%
+                    midpoint = mean(currentYLim);
+                    updatedY = (currentYLim - midpoint) * 1.1 + midpoint;
+
+                    set(ax, 'YLim', updatedY); % Example: zoom out by 20%
 
                 case 'rightarrow'
                     % Move right big step

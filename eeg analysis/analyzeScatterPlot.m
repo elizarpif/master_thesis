@@ -1,160 +1,160 @@
-function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePointNames, patientNum, seizureNum)
-    % Analyze scatter plot of L vs R metrics and save outliers
-    % Inputs:
-    %   L_selected - L metric values
-    %   R_selected - R metric values
-    %   selectedPairNames - names of channel pairs
-    %   timePointNames - time point names
-    %   patientNum - patient number
-    %   seizureNum - seizure number
-    
-    num_pairs = size(L_selected, 1);
-    num_times = size(L_selected, 2);
-    
-    % Create scatter plot
-    figure;
-    hold on;
-    colors = lines(num_pairs);
-    scatter_handles = gobjects(num_pairs, 1);
-    
-    for pair_idx = 1:num_pairs
-        scatter_handles(pair_idx) = scatter(L_selected(pair_idx, :), R_selected(pair_idx, :),...
-            20, colors(pair_idx, :), 'filled', 'UserData', pair_idx);
-    end
-    
-    xlabel('Metric L');
-    ylabel('Metric R');
-    title(sprintf('Scatter Plot L vs R (Patient %02d, Seizure %d)', patientNum, seizureNum));
-    grid on;
-    legend(selectedPairNames, 'Location', 'eastoutside');
-    hold off;
-    
-    % Enable Data Cursor
-    dcm = datacursormode(gcf);
-    set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames));
-    
-    % Perform outlier detection
-    X = L_selected(:);
-    Y = R_selected(:);
-    
-    % Create indices for each point
-    [time_indices, pair_indices] = meshgrid(1:num_times, 1:num_pairs);
-    pair_indices = pair_indices(:);
-    time_indices = time_indices(:);
-    
-    % Detect outliers
-    [outliers, residuals, coeffs] = detectOutliers(X, Y);
-    
-    % Create table for outliers
-    outlier_data = table();
-    
-    % Get indices of outlier points
-    outlier_pairs = pair_indices(outliers);
-    outlier_times = time_indices(outliers);
-    
-    % Convert time indices to time points
-    timePointNames_outliers = cell(size(outlier_times));
-    for i = 1:length(outlier_times)
-        timePointNames_outliers{i} = timePointNames{mod(outlier_times(i)-1, length(timePointNames)) + 1};
-    end
-    
-    % Store outlier information
-    outlier_data.Pair = selectedPairNames(outlier_pairs);
-    outlier_data.TimePoint = timePointNames_outliers;
-    outlier_data.PairIndex = outlier_pairs;
-    outlier_data.TimeIndex = outlier_times;
-    outlier_data.L_Value = X(outliers);
-    outlier_data.R_Value = Y(outliers);
-    outlier_data.Residual = residuals(outliers);
-    
-    % Save outliers to CSV file
-    csv_filename = sprintf('outliers_pat%02d_sz%d.csv', patientNum, seizureNum);
-    writetable(outlier_data, csv_filename);
-    
-    % Visualize outliers
-    visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum, pair_indices, selectedPairNames, timePointNames);
+function analyzeScatterPlot(L_selected, R_selected, selectedPairNames, timePointNames, patientNum, seizureNum, fileName)
+% Analyze scatter plot of L vs R metrics and save outliers
+% Inputs:
+%   L_selected - L metric values
+%   R_selected - R metric values
+%   selectedPairNames - names of channel pairs
+%   timePointNames - time point names
+%   patientNum - patient number
+%   seizureNum - seizure number
+
+num_pairs = size(L_selected, 1);
+num_times = size(L_selected, 2);
+
+% Create scatter plot
+figure;
+hold on;
+colors = lines(num_pairs);
+scatter_handles = gobjects(num_pairs, 1);
+
+for pair_idx = 1:num_pairs
+    scatter_handles(pair_idx) = scatter(L_selected(pair_idx, :), R_selected(pair_idx, :),...
+        20, colors(pair_idx, :), 'filled', 'UserData', pair_idx);
+end
+
+xlabel('Metric L');
+ylabel('Metric R');
+title(sprintf('Scatter Plot L vs R (Patient %02d, Seizure %d)', patientNum, seizureNum));
+grid on;
+legend(selectedPairNames, 'Location', 'eastoutside');
+hold off;
+
+% Enable Data Cursor
+dcm = datacursormode(gcf);
+set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames));
+
+% Perform outlier detection
+X = L_selected(:);
+Y = R_selected(:);
+
+% Create indices for each point
+[time_indices, pair_indices] = meshgrid(1:num_times, 1:num_pairs);
+pair_indices = pair_indices(:);
+time_indices = time_indices(:);
+
+% Detect outliers
+[outliers, residuals, coeffs] = detectOutliers(X, Y);
+
+% Create table for outliers
+outlier_data = table();
+
+% Get indices of outlier points
+outlier_pairs = pair_indices(outliers);
+outlier_times = time_indices(outliers);
+
+% Convert time indices to time points
+timePointNames_outliers = timePointNames(outlier_times);
+
+% Store outlier information
+outlier_data.Pair = selectedPairNames(outlier_pairs);
+
+timePointNames_transformed = cell(size(timePointNames_outliers));
+for i = 1:length(timePointNames_outliers)
+    t = str2num(timePointNames_outliers{i});
+    timePointNames_transformed{i} = sprintf("%d-%d", t - 20, t);
+end
+outlier_data.TimePoint = timePointNames_transformed;
+
+
+% Save outliers to CSV file
+writetable(outlier_data, fileName);
+
 end
 
 function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames)
-    pair_idx = event_obj.Target.UserData;
-    time_idx = event_obj.DataIndex;
-    
-    if ~isempty(pair_idx) && ~isempty(time_idx)
-        % Map the time index to the correct timePointNames index
-        time_point_idx = mod(time_idx-1, length(timePointNames)) + 1;
-        output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                     sprintf('Time point: %s', timePointNames{time_point_idx})};
-        logger(sprintf("%s, time point %s", selectedPairNames{pair_idx}, timePointNames{time_point_idx}));
-    else
-        output_txt = {'No data found'};
-    end
+pair_idx = find(scatter_handles == event_obj.Target, 1);
+time_idx = event_obj.DataIndex;
+
+% logger("pair %d time idx %d pos %f %f", pair_idx, time_idx, pos(1), pos(2));
+if ~isempty(pair_idx) && ~isempty(time_idx)
+    output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
+        sprintf('Time interval: %d', time_idx*20-20)};
+    logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
+else
+    output_txt = {'No data found'};
+end
 end
 
-function visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum, pair_indices, selectedPairNames, timePointNames)
-    % Visualize outliers and regression line with data cursor functionality
-    % Inputs:
-    %   X - L metric values
-    %   Y - R metric values
-    %   outliers - logical array indicating which points are outliers
-    %   coeffs - coefficients of the polynomial regression
-    %   patientNum - patient number
-    %   seizureNum - seizure number
-    %   pair_indices - indices of pairs for each point
-    %   selectedPairNames - names of channel pairs
-    %   timePointNames - time point names
-    
-    figure;
-    hold on;
-    
-    % Create scatter plots with UserData
-    normal_scatter = scatter(X(~outliers), Y(~outliers), 'b', 'filled', ...
-        'UserData', pair_indices(~outliers));
-    outlier_scatter = scatter(X(outliers), Y(outliers), 'r', 'filled', ...
-        'UserData', pair_indices(outliers));
-    regression_line = plot(sort(X), polyval(coeffs, sort(X)), 'k--', 'LineWidth', 2);
-    
-    scatter_handles = [normal_scatter; outlier_scatter];
-    
-    legend([normal_scatter, outlier_scatter, regression_line], ...
-        {'Normal points', 'Outliers', 'Polynomial regression'}, 'Location', 'best');
-    title(sprintf('Outlier Detection (Patient %02d, Seizure %d)', patientNum, seizureNum));
-    xlabel('L metric');
-    ylabel('R metric');
-    grid on;
-    
-    % Enable Data Cursor
-    dcm = datacursormode(gcf);
-    set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames));
-    
-    hold off;
+function visualizeOutliers(X, Y, outliers, coeffs, patientNum, seizureNum)
+% Visualize outliers and regression line with data cursor functionality
+% Inputs:
+%   X - L metric values
+%   Y - R metric values
+%   outliers - logical array indicating which points are outliers
+%   coeffs - coefficients of the polynomial regression
+%   patientNum - patient number
+%   seizureNum - seizure number
+
+figure;
+hold on;
+figure;
+hold on;
+scatter(X(~outliers), Y(~outliers), 'b', 'filled', 'DisplayName', 'Normal points');
+scatter(X(outliers), Y(outliers), 'r', 'filled', 'DisplayName', 'Outliers');
+plot(sort(X), polyval(coeffs, sort(X)), 'k--', 'LineWidth', 2, 'DisplayName', 'Polynomial regression');
+
+legend('show');
+title(sprintf('Outlier Detection (Patient %02d, Seizure %d)', patientNum, seizureNum));
+xlabel('L metric');
+ylabel('R metric');
+grid on;
+hold off;
 end
 
-function [outliers, residuals, coeffs] = detectOutliers(X, Y)
-    % Detect outliers using polynomial regression and return only outlier indices
-    % Inputs:
-    %   X - L metric values
-    %   Y - R metric values
-    % Outputs:
-    %   outliers - logical array indicating which points are outliers
-    %   residuals - residuals of the polynomial regression
-    %   coeffs - coefficients of the polynomial regression
+function [outliers, residuals, coeffs, bestDegree] = detectOutliers(X, Y)
+% Adaptive Outlier Detection using Polynomial Regression
 
-    % 1. Polynomial regression
-    degree = 3;
-    coeffs = polyfit(X, Y, degree);
-    Y_pred = polyval(coeffs, X);
-    
-    % 2. Calculate residuals
-    residuals = abs(Y - Y_pred);
-    
-    % 3. Determine outliers (if residual is above 4 standard deviations)
-    threshold = 4 * std(residuals);
-    outliers = residuals > threshold;
-    
-    % 4. Extract outlier indices
-    pair_indices = 1:length(X);
-    time_indices = pair_indices;
-    
-    % Visualize outliers
-    visualizeOutliers(X, Y, outliers, coeffs, 16, 1, pair_indices, {'Pair 1', 'Pair 2'}, {'Time Point 1', 'Time Point 2'});
-end 
+% 1. Select the best polynomial degree using cross-validation
+maxDegree = 6;
+errors = zeros(maxDegree, 1);
+
+for d = 1:maxDegree
+    coeffs_d = polyfit(X, Y, d);
+    Y_pred_d = polyval(coeffs_d, X);
+    errors(d) = mean(abs(Y - Y_pred_d));
+end
+
+[~, bestDegree] = min(errors);
+coeffs = polyfit(X, Y, bestDegree);
+Y_pred = polyval(coeffs, X);
+
+% 2. Calculate residuals
+residuals = abs(Y - Y_pred);
+
+% 3. Adaptive Outlier Detection (Less Aggressive)
+% Tukey's Fences with higher multiplier
+Q1 = quantile(residuals, 0.25);
+Q3 = quantile(residuals, 0.75);
+IQR_value = Q3 - Q1;
+threshold = Q3 + 3 * IQR_value; % Adjusted from 1.5 → 3 for a more tolerant filter
+
+% Alternative MAD-based approach (More Robust)
+mad_res = median(abs(residuals - median(residuals)));
+mad_threshold = 5 * mad_res; % Increased from 4 → 5
+
+% Combine Both (More Flexible)
+outliers = (residuals > max(threshold, mad_threshold));
+
+% 4. Visualization
+figure; hold on;
+scatter(X, Y, 'b', 'filled'); % Normal points
+scatter(X(outliers), Y(outliers), 'r', 'filled'); % Outliers
+plot(sort(X), polyval(coeffs, sort(X)), 'k--', 'LineWidth', 2); % Regression curve
+
+legend('Normal points', 'Outliers', sprintf('Polynomial Regression (degree %d)', bestDegree));
+title('Refined Outlier Detection with Adjusted Threshold');
+xlabel('L_selected (X)');
+ylabel('R_selected (Y)');
+hold off;
+
+end

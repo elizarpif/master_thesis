@@ -1,9 +1,5 @@
 load('pat16_part1_results_bands.mat');
 
-
-% % % %
-% 
-
 bands = ["alpha", "beta", "theta", "delta"];
 selected_band = 1; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
 

@@ -22,8 +22,8 @@ intervalJump = 10240 / downsamplingFactor; % because of the downsampling
 totalIntervals = floor(lengthData / intervalJump);
 numPairs = floor(numChannels / 2);
 
-% filteredEEG = filterAllEEGByBand(downsampledEEGData, newFs, "delta");
-PlotEEG(downsampledEEGData, channelNameArray, newFs, "unfiltered");
+filteredEEG = filterAllEEGByBand(downsampledEEGData, newFs, "delta");
+% PlotEEG(downsampledEEGData, channelNameArray, newFs, "unfiltered");
 bands = ["alpha", "beta", "theta", "delta"];
 
 L_XY_all = zeros(length(bands), numPairs, totalIntervals);
@@ -40,7 +40,7 @@ for idx = 1:numPairs
     selectedPairNames(idx) = sprintf('%s-%s', channelNameArray{eegIdx}, channelNameArray{eegIdx + 1});
 end
 
-for bandIndex = 4
+for bandIndex = 1:length(bands)
     bandName = bands(bandIndex);
 
     logger(sprintf("started for %s", bandName));
@@ -48,7 +48,6 @@ for bandIndex = 4
     selectedFilteredPairs = filterEEGByBand(selectedPairs, newFs, bandName);
 
     intervalIndex = 1; % Initialize interval index
-
 
     % Process each interval of EEG data
     for interval = intervalJump:intervalJump:lengthData
@@ -62,13 +61,15 @@ for bandIndex = 4
         for idx = 1:numPairs
             pair = selectedFilteredPairs{idx}(:,l:r);
 
-            % Compute L metric
-            res = computeLMetric(pair, downsamplingFactor);
-            L_XY_all(bandIndex, idx, intervalIndex) = res(1);
-            L_YX_all(bandIndex, idx, intervalIndex) = res(2);
+
 
             % Compute R metric
             R_all(bandIndex, idx, intervalIndex) = computeRMetric(pair);
+
+                        % Compute L metric
+            res = computeLMetric(pair, downsamplingFactor);
+            L_XY_all(bandIndex, idx, intervalIndex) = res(1);
+            L_YX_all(bandIndex, idx, intervalIndex) = res(2);
         end
 
         intervalIndex = intervalIndex+1;
@@ -81,18 +82,18 @@ timePointNames = getTimePointNames(intervalJump, lengthData, newFs);
 percentEndSeizureLocation = (lengthData/newFs - 180) / (20*100) ;
 
 save("pat16_part2_results_bands.mat",'L_XY_all', 'L_YX_all','R_all', 'numPairs', 'timePointNames', 'percentEndSeizureLocation', 'selectedPairNames');
-
-bandIndex = 1;
-L_XY_all_alpha = squeeze(L_XY_all(bandIndex, :, :));
-R_all_alpha = squeeze(R_all(bandIndex, :, :));
-
-colorbarMin = min([min(L_XY_all_alpha(:)), min(R_all_alpha(:))]);
-colorbarMax = max([max(L_XY_all_alpha(:)), max(R_all_alpha(:))]);
-
-eegImagescResult(timePointNames, L_XY_all_alpha, numPairs, ...
-    percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(bandIndex)), ...
-    selectedPairNames, colorbarMin, colorbarMax);
-eegImagescResult(timePointNames, R_all_alpha, numPairs, ...
-    percentEndSeizureLocation, sprintf("R (%s)", bands(bandIndex)), ...
-    selectedPairNames, colorbarMin, colorbarMax)
+% 
+% bandIndex = 1;
+% L_XY_all_alpha = squeeze(L_XY_all(bandIndex, :, :));
+% R_all_alpha = squeeze(R_all(bandIndex, :, :));
+% 
+% colorbarMin = min([min(L_XY_all_alpha(:)), min(R_all_alpha(:))]);
+% colorbarMax = max([max(L_XY_all_alpha(:)), max(R_all_alpha(:))]);
+% 
+% eegImagescResult(timePointNames, L_XY_all_alpha, numPairs, ...
+%     percentEndSeizureLocation, sprintf("L_{XY} (%s)", bands(bandIndex)), ...
+%     selectedPairNames, colorbarMin, colorbarMax);
+% eegImagescResult(timePointNames, R_all_alpha, numPairs, ...
+%     percentEndSeizureLocation, sprintf("R (%s)", bands(bandIndex)), ...
+%     selectedPairNames, colorbarMin, colorbarMax)
 

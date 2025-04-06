@@ -13,8 +13,10 @@ isPlotX1Y1 = false; % Option to plot dynamics
 L_YX_mean = zeros(size(couplingX_values));
 L_XY_mean = zeros(size(couplingX_values));
 R_mean = zeros(size(couplingX_values));
-G_mean = zeros(size(couplingX_values));
-S_mean = zeros(size(couplingX_values));
+
+R_errors = zeros(size(couplingX_values));
+L_XY_errors = zeros(size(couplingX_values));
+L_YX_errors = zeros(size(couplingX_values));
 
 noise_levels_SNR = {...
     {0, "NO NOISE"}, ...
@@ -22,18 +24,20 @@ noise_levels_SNR = {...
     {2, ""}, ...
     {1, ""}, ...
     {0.5, ""}, ...
-    {0.1, ""}, ...
+    {0.001, ""}, ...
     {0, "NOISE ONLY"} ...
 };
 
 L_YX_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
 L_XY_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
 R_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
-G_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
-S_noisy_coupling_mean = zeros(length(noise_levels_SNR), length(couplingX_values));
 
-%% plot signal versus noisy signal
-% for index = 3
+L_YX_noisy_errors = zeros(length(noise_levels_SNR), length(couplingX_values));
+L_XY_noisy_errors = zeros(length(noise_levels_SNR), length(couplingX_values));
+R_noisy_errors = zeros(length(noise_levels_SNR), length(couplingX_values));
+
+% %% plot signal versus noisy signal
+% for index = 2
 %     noise_case = noise_levels_SNR{index}{2};
 %     noise_level = noise_levels_SNR{index}{1};
 %     res = simulateRossler(0.12, Ey, wx, wy);
@@ -56,8 +60,6 @@ for index = 1:length(noise_levels_SNR)
         L_YX_runs = zeros(numRuns, 1);
         L_XY_runs = zeros(numRuns, 1);
         R_runs = zeros(numRuns, 1);
-        G_runs = zeros(numRuns, 1);
-        S_runs = zeros(numRuns, 1);
 
         for runIdx = 1:numRuns
             % Simulate Rossler systems
@@ -66,7 +68,7 @@ for index = 1:length(noise_levels_SNR)
             % Downsample and take only the last half
             [x_original, tx] = downsampleRosslerSignal(res(1,:), res(4,:), false);
             [y_original, ty] = downsampleRosslerSignal(res(2,:), res(4,:), false);
-            
+
             [y_original_aux, ty_aux] = downsampleRosslerSignal(res(3,:), res(4,:), false);
 
             x_noisy = add_measurement_noise(noise_case, x_original, noise_level);
@@ -83,14 +85,6 @@ for index = 1:length(noise_levels_SNR)
 
             % Compute R metric
             R_runs(runIdx) = computeRMetric(datarec);
-
-            % Compute synchronization measures G (generalized sync) and S
-            % (phase sync)
-            G_runs = computeGMetric(y_noisy, y_aux_noisy);
-            logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G)));
-
-            S_runs(runIdx) = computeSMetric(x_noisy, y_noisy);
-            logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
         end
 
         % Compute mean metrics
@@ -98,8 +92,9 @@ for index = 1:length(noise_levels_SNR)
         L_XY_mean(idx) = mean(L_XY_runs);
         R_mean(idx) = mean(R_runs);
 
-        G_mean(idx) = mean(G_runs);
-        S_mean(idx) = mean(S_runs);
+        R_errors(idx) = std(R_runs, 0, 1) / sqrt(numRuns); 
+        L_XY_errors(idx) = std(R_runs, 0, 1) / sqrt(numRuns); 
+        L_YX_errors(idx) = std(R_runs, 0, 1) / sqrt(numRuns); 
 
         logger(sprintf("mean metric computed for E_x = %f, SNR = %d", couplingX, noise_level))
     end
@@ -108,22 +103,23 @@ for index = 1:length(noise_levels_SNR)
     L_YX_noisy_coupling_mean(index,:) = L_YX_mean;
     R_noisy_coupling_mean(index,:) = R_mean;
 
-    G_noisy_coupling_mean(index,:) = G_mean;
-    S_noisy_coupling_mean(index,:) = S_mean;
+    R_noisy_errors(index, :) = R_errors;
+    L_XY_noisy_errors(index, :) = L_XY_errors;
+    L_YX_noisy_errors(index, :) = L_YX_errors;
 
     logger(sprintf("mean metric computed for SNR = %d", noise_level))
 end
 
 %% Plot results
 
-plotNoisyCoupling(R_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'R', '');
-plotNoisyCoupling(L_XY_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'L_{XY}', '');
-plotNoisyCoupling(L_YX_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'L_{YX}', '');
-plotNoisyCoupling(G_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'G', '');
-plotNoisyCoupling(S_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'S', '');
+% plotNoisyCoupling(R_noisy_coupling_mean,R_noisy_errors, couplingX_values, noise_levels_SNR, 'R', '');
+% plotNoisyCoupling(L_XY_noisy_coupling_mean,L_XY_noisy_errors, couplingX_values, noise_levels_SNR, 'L_{XY}', '');
+% plotNoisyCoupling(L_YX_noisy_coupling_mean,L_YX_noisy_errors, couplingX_values, noise_levels_SNR, 'L_{YX}', '');
+% plotNoisyCoupling(G_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'G', '');
+% plotNoisyCoupling(S_noisy_coupling_mean, couplingX_values, noise_levels_SNR, 'S', '');
 
-save("noisy_rossler.mat",'R_noisy_coupling_mean', 'L_XY_noisy_coupling_mean','L_YX_noisy_coupling_mean', ...
-    'S_noisy_coupling_mean', 'G_noisy_coupling_mean', 'couplingX_values', 'noise_levels_SNR' );
+% save("noisy_rossler.mat",'R_noisy_coupling_mean', 'L_XY_noisy_coupling_mean','L_YX_noisy_coupling_mean', ...
+%     'S_noisy_coupling_mean', 'G_noisy_coupling_mean', 'couplingX_values', 'noise_levels_SNR' );
 
 
 % % Plotting colormap de deltaL

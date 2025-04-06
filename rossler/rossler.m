@@ -4,7 +4,7 @@ Ey=0;
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [0, logspace(log10(0.01), log10(1), 30)]; % Coupling strengths
+couplingX_values = [0, logspace(log10(0.01), log10(1), 20)]; % Coupling strengths
 
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
@@ -16,11 +16,20 @@ R_mean = zeros(size(couplingX_values));
 G_mean = zeros(size(couplingX_values));
 S_mean = zeros(size(couplingX_values));
 
+R_errors = zeros(size(couplingX_values));
+L_XY_errors = zeros(size(couplingX_values));
+L_YX_errors = zeros(size(couplingX_values));
+
 L_XY_all = zeros(length(couplingX_values), numRuns);
 L_YX_all = zeros(length(couplingX_values), numRuns);
 R_all = zeros(length(couplingX_values), numRuns);
 G_all = zeros(length(couplingX_values), numRuns);
 S_all = zeros(length(couplingX_values), numRuns);
+
+L_YX_errors_all = zeros(length(couplingX_values), numRuns);
+L_XY_errors_all = zeros(length(couplingX_values), numRuns);
+R_errors_all = zeros(length(couplingX_values), numRuns);
+
 
 
 %% Main loop over coupling strengths
@@ -54,7 +63,7 @@ for idx = 1:length(couplingX_values)
         L_YX_runs(runIdx) = Lmetric(2); % L(Y|X)
 
         G_runs(runIdx) = computeGMetric(y, y_aux);
-        logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G)));
+        logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G_runs(runIdx))));
 
         S_runs(runIdx) = computeSMetric(x,y);
         logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
@@ -72,6 +81,14 @@ for idx = 1:length(couplingX_values)
     G_mean(idx) = mean(G_runs);
     S_mean(idx) = mean(S_runs);
 
+    R_errors(idx) = std(R_runs) ; 
+    L_XY_errors(idx) = std(R_runs) ; 
+    L_YX_errors(idx) = std(R_runs) ; 
+
+    % R_errors_all(idx, :) = R_errors;
+    % L_XY_errors_all(idx, :) = L_XY_errors;
+    % L_YX_errors_all(idx, :) = L_YX_errors;
+
     % Store all runs for plotting
     L_XY_all(idx, :) = L_XY_runs;
     L_YX_all(idx, :) = L_YX_runs;
@@ -82,6 +99,8 @@ end
 toc
 
 %% Plot results
+plotCoupling(R_mean,R_errors, L_XY_mean, L_XY_errors,L_YX_mean, L_YX_errors, couplingX_values);
+
 % plotMetricResults(couplingX_values, L_XY_all, L_XY_mean, 'L_{XY}');
 % plotMetricResults(couplingX_values, L_YX_all, L_YX_mean, 'L_{YX}');
 % plotMetricResults(couplingX_values, R_all, R_mean, 'R');

@@ -7,7 +7,8 @@ x_downsampled = x_res(1:ds_factor:end);
 t_downsampled = t(1:ds_factor:end);
 
 % and take only 4096 last samples
-number_of_samples = 4096;
+% 512
+number_of_samples = 1024;
 x = x_downsampled(end-number_of_samples+1: end);
 t = t_downsampled(end-number_of_samples+1: end);
 

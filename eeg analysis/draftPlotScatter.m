@@ -1,47 +1,35 @@
-load('pat16_part1_results_bands.mat');
+load('patients results/pat3_1_all_results_unfiltered.mat');
+
+% bands = ["alpha", "beta", "theta", "delta"];
+% selected_band = 4; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
+% 
+% L_selected = squeeze(L_XY_all(selected_band, :, :));
+% R_selected = squeeze(R_all(selected_band, :, :));
+
+L_selected = L_XY_all;
+R_selected = R_all;
+
+wantPair = "";
+wantTimeIntervalEnd = "";
+paint = true;
+
+plotScatter(L_selected, R_selected, selectedPairNames, timePointNames, ...
+    wantPair, wantTimeIntervalEnd, paint, ...
+    "patients results/plotBySOZ_unfiltered.jpg", "unfiltered")
+
+load('patients results/pat3_1_all_results_bands.mat');
 
 bands = ["alpha", "beta", "theta", "delta"];
-selected_band = 1; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
+% selected_band = 4; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)
 
-L_selected = squeeze(L_XY_all(selected_band, :, :));
-R_selected = squeeze(R_all(selected_band, :, :));
 
-num_pairs = size(L_selected, 1);
-num_times = size(L_selected, 2);
 
-figure;
-hold on;
-colors = lines(num_pairs);
-scatter_handles = gobjects(num_pairs, 1); % сохраним scatter-объекты
+for i = 1:length(bands)
+    L_selected = squeeze(L_XY_all(i, :, :));
+    R_selected = squeeze(R_all(i, :, :));
 
-for pair_idx = 1:num_pairs
-    scatter_handles(pair_idx) = scatter(L_selected(pair_idx, :), R_selected(pair_idx, :),...
-        20, colors(pair_idx, :), 'filled');
+    filename = sprintf("patients results/plotBySOZ_%s.jpg", bands(i));
+    plotScatter(L_selected, R_selected, selectedPairNames, timePointNames, ...
+        wantPair, wantTimeIntervalEnd, paint, ...
+        filename, bands(i));
 end
-
-xlabel('Metric L');
-ylabel('Metric R');
-title('Scatter Plot L vs R');
-grid on;
-legend(selectedPairNames, 'Location', 'eastoutside');
-hold off;
-
-% Подключаем Data Cursor
-dcm = datacursormode(gcf);
-set(dcm, 'UpdateFcn', @(obj, event_obj) displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames));
-
-function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairNames, timePointNames)
-    pair_idx = find(scatter_handles == event_obj.Target, 1);
-    time_idx = event_obj.DataIndex;
-    
-    % logger("pair %d time idx %d pos %f %f", pair_idx, time_idx, pos(1), pos(2));
-    if ~isempty(pair_idx) && ~isempty(time_idx)
-        output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
-                      sprintf('Time interval: %d', time_idx*20-20)};
-        logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
-    else
-        output_txt = {'No data found'};
-    end
-end
-
-

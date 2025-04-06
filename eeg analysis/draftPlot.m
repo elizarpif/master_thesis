@@ -7,8 +7,8 @@ Ts = 1 / Fs;
 
 filteredEEGbyBand = eegDataOriginal;
 
-% filteredEEGbyBand = filterAllEEGByBand(eegDataOriginal, Fs, "beta");
-PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat 16, part 1 (unflitered)"));
+% filteredEEGbyBand = filterAllEEGByBand(eegDataOriginal, Fs, "delta");
+PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat 16, part 1"));
 
 
 % figure;

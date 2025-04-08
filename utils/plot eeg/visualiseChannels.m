@@ -40,17 +40,14 @@ function visualiseChannels( x, y, channelNameArray, plotTitle )
     end
     hold off;
 
+    ax = gca;
     % Enhance visibility and customize plot
-    set(gca, 'YTick', channelLabelPosition, 'YTickLabel', channelLabel, 'Clipping', 'on', 'Box', 'off', 'LineWidth', 2);
+    set(ax, 'YTick', channelLabelPosition, 'YTickLabel', channelLabel, 'Clipping', 'on', 'Box', 'off', 'LineWidth', 2);
+    ax.XAxis.FontSize = 16;
+    ax.YAxis.FontSize = 16;
     ylim([-1 1] * interval*1.05); % Set Y-axis limits
     xlim([1 400])
 
-
-    % Set up keyboard event handler
-    % After creating the figure
-    % set(gcf, 'KeyPressFcn', @keypress_callback);
-
-    % Add X-axis label and title
     xlabel('Time (s)');
     ylabel('Channel Data');
     title(plotTitle);

@@ -4,7 +4,7 @@ Ey=0;
 wx = 1.1;
 wy = 0.9;
 
-couplingX_values = [0, logspace(log10(0.01), log10(1), 20)]; % Coupling strengths
+couplingX_values = [0, logspace(log10(0.01), log10(1), 30)]; % Coupling strengths
 
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
@@ -18,18 +18,16 @@ S_mean = zeros(size(couplingX_values));
 
 R_errors = zeros(size(couplingX_values));
 L_XY_errors = zeros(size(couplingX_values));
+delta_L_errors = zeros(size(couplingX_values));
 L_YX_errors = zeros(size(couplingX_values));
+G_errors = zeros(size(couplingX_values));
+S_errors = zeros(size(couplingX_values));
 
 L_XY_all = zeros(length(couplingX_values), numRuns);
 L_YX_all = zeros(length(couplingX_values), numRuns);
 R_all = zeros(length(couplingX_values), numRuns);
 G_all = zeros(length(couplingX_values), numRuns);
 S_all = zeros(length(couplingX_values), numRuns);
-
-L_YX_errors_all = zeros(length(couplingX_values), numRuns);
-L_XY_errors_all = zeros(length(couplingX_values), numRuns);
-R_errors_all = zeros(length(couplingX_values), numRuns);
-
 
 
 %% Main loop over coupling strengths
@@ -84,10 +82,10 @@ for idx = 1:length(couplingX_values)
     R_errors(idx) = std(R_runs) ; 
     L_XY_errors(idx) = std(R_runs) ; 
     L_YX_errors(idx) = std(R_runs) ; 
+    G_errors(idx) = std(G_runs) ; 
+    S_errors(idx) = std(S_runs) ; 
 
-    % R_errors_all(idx, :) = R_errors;
-    % L_XY_errors_all(idx, :) = L_XY_errors;
-    % L_YX_errors_all(idx, :) = L_YX_errors;
+    delta_L_errors(idx) = std(L_XY_runs-L_YX_runs);
 
     % Store all runs for plotting
     L_XY_all(idx, :) = L_XY_runs;
@@ -100,6 +98,8 @@ toc
 
 %% Plot results
 plotCoupling(R_mean,R_errors, L_XY_mean, L_XY_errors,L_YX_mean, L_YX_errors, couplingX_values);
+plotCouplingOneMeasure(L_XY_mean-L_YX_mean,delta_L_errors, 'delta L', couplingX_values);
+% plotCouplingOneMeasure(G_mean,G_errors, 'G', couplingX_values);
 
 % plotMetricResults(couplingX_values, L_XY_all, L_XY_mean, 'L_{XY}');
 % plotMetricResults(couplingX_values, L_YX_all, L_YX_mean, 'L_{YX}');

@@ -6,8 +6,7 @@ ds_factor = 9;
 x_downsampled = x_res(1:ds_factor:end);
 t_downsampled = t(1:ds_factor:end);
 
-% and take only 4096 last samples
-% 512
+% and take only 1024 last samples
 number_of_samples = 1024;
 x = x_downsampled(end-number_of_samples+1: end);
 t = t_downsampled(end-number_of_samples+1: end);
@@ -17,7 +16,7 @@ if isPlotDynamics
     figure;
     plot(t, x);
     title('Downsampled Signal');
-    xlabel('Time');
+    xlabel('Time [a.u.]');
     ylabel('Values');
     grid on;
 end

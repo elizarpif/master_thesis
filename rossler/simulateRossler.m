@@ -53,21 +53,21 @@ res = [x_res(1,:); y_res(1,:); y_res_aux(1,:); t];
 
 % figure;
 % subplot(3,1,1);
-% plot(t(end-4096*3:end), x_res(1, end-4096*3:end));
-% xlim([t(end-4096*3), t(end)]);
-% % xlabel('Time');
+% plot(t(end-2048*3:end), x_res(1, end-2048*3:end));
+% xlim([t(end-2048*3), t(end)]);
+% xlabel('Time [a.u.]');
 % ylabel('x_1');
-%
+% 
 % subplot(3,1,2);
-% plot(t(end-4096*3:end), x_res(2, end-4096*3:end));
-% xlim([t(end-4096*3), t(end)]);
-% % xlabel('Time');
+% plot(t(end-2048*3:end), x_res(2, end-2048*3:end));
+% xlim([t(end-2048*3), t(end)]);
+% xlabel('Time [a.u.]');
 % ylabel('x_2');
-%
+% 
 % subplot(3,1,3);
-% plot(t(end-4096*3:end), x_res(3, end-4096*3:end));
-% xlim([t(end-4096*3), t(end)]);
-% ylabel('x_3');
+% plot(t(end-2048*3:end), x_res(3, end-2048*3:end));
+% xlim([t(end-2048*3), t(end)]);
+% xlabel('Time [a.u.]');
 % xlabel('Time');
 
 end

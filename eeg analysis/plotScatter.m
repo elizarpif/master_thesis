@@ -5,6 +5,9 @@ function plotScatter(L_selected, R_selected, selectedPairNames, ...
 num_pairs = size(L_selected, 1);
 num_times = size(L_selected, 2);
 
+L_vec = reshape(L_selected', [], 1);
+R_vec = reshape(R_selected', [], 1);
+
 f = figure;
 hold on;
 
@@ -21,8 +24,9 @@ for pair_idx = 1:num_pairs
 end
 
 if paintSeizureParts
-    timeSeizureStart = 9;
-    timeSeizureEnd = 13;
+    % indices start and end
+    timeSeizureStart = 9; 
+    timeSeizureEnd = length(timePointNames)-8;
 
     for pair_idx = 1:num_pairs
         for time_idx = 1:num_times
@@ -78,7 +82,7 @@ end
 
 function output_txt = displayPointInfo(event_obj, scatter_handles, selectedPairNames)
 pair_idx = [];
-disp(event_obj.DataIndex);
+
 for i = 1:length(scatter_handles)
     for j = 1:length(scatter_handles{i})
         if any(scatter_handles{i}(j).scatter == event_obj.Target)
@@ -100,7 +104,7 @@ end
 if ~isempty(pair_idx) && ~isempty(time_idx)
     output_txt = {sprintf('Pair: %s', selectedPairNames{pair_idx}), ...
         sprintf('Time interval: %d-%d s', time_idx*20-20, time_idx*20)};
-    logger(sprintf("%s, time interval %d-%d s", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20));
+    fprintf("%s, time interval %d-%d s\n", selectedPairNames{pair_idx}, time_idx*20-20, time_idx*20);
 else
     output_txt = {'No data found'};
 end

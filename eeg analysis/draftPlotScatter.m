@@ -1,4 +1,4 @@
-load('patients results/pat3_1_all_results_unfiltered.mat');
+load('patients results/pat8_1_all_results_unfiltered.mat');
 
 % bands = ["alpha", "beta", "theta", "delta"];
 % selected_band = 4; % Select the frequency band (1: alpha, 2: beta, 3: theta, 4: delta)

@@ -11,9 +11,9 @@ R_vec = reshape(R_selected', [], 1);
 X = [L_vec, R_vec];
 
 % Параметры DBSCAN (подберите epsilon и minPts под ваши данные)
-epsilon = kmeans(L_vec, 1);
+epsilon = estimateEpsilonForDBSCANUsingKMeans(L_vec, 2);
 disp(epsilon);
-minPts = 5;
+minPts = 3;
 % Применяем DBSCAN. Точки с меткой -1 считаются выбросами.
 % 704x1
 labels = dbscan(X, epsilon, minPts);

@@ -23,6 +23,9 @@ function visualiseChannels( x, y, channelNameArray, plotTitle )
     c_space = repmat(color_template, [ceil(nChan/size(color_template, 1)), 1]);
 
     % Main plot
+    % Remove underscores from each element:
+    channelNameArray = cellfun(@(x) strrep(x, '_', ''), channelNameArray, 'UniformOutput', false);
+
     channelLabel = flip(channelNameArray); % Channel labels
     channelLabelPosition = []; % Y-axis positions for channel labels
     lw = 1; % Line width
@@ -44,7 +47,7 @@ function visualiseChannels( x, y, channelNameArray, plotTitle )
     % Enhance visibility and customize plot
     set(ax, 'YTick', channelLabelPosition, 'YTickLabel', channelLabel, 'Clipping', 'on', 'Box', 'off', 'LineWidth', 2);
     ax.XAxis.FontSize = 16;
-    ax.YAxis.FontSize = 16;
+    ax.YAxis.FontSize = 14;
     ylim([-1 1] * interval*1.05); % Set Y-axis limits
     xlim([1 400])
 

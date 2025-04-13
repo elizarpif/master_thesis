@@ -6,8 +6,8 @@ ds_factor = 9;
 x_downsampled = x_res(1:ds_factor:end);
 t_downsampled = t(1:ds_factor:end);
 
-% and take only 1024 last samples
-number_of_samples = 1024;
+% and take only 10240 last samples
+number_of_samples = 10240;
 x = x_downsampled(end-number_of_samples+1: end);
 t = t_downsampled(end-number_of_samples+1: end);
 

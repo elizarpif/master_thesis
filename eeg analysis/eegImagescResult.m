@@ -1,10 +1,10 @@
 function eegImagescResult(timePointNames, pairsValues, numPairs, ...
-    percentEndSeizureLocation, metricName, selectedPairNames, colorbarMin, colorbarMax)
+    percentEndSeizureLocation, metricName, fileName, selectedPairNames, colorbarMin, colorbarMax)
 
     % xValues = 1,2,3,4,5...22
     xValues = 1:size(pairsValues, 2);
 
-    % figure;
+    f = figure;
     imagesc(xValues, 1:numPairs, pairsValues);
     colorbar;
     caxis([colorbarMin colorbarMax]);
@@ -33,5 +33,9 @@ function eegImagescResult(timePointNames, pairsValues, numPairs, ...
     xline(x2, '--r', 'LineWidth', 2); % Dashed red line
     
     hold off;
+
+    if fileName ~= ""
+        saveas(f, fileName); 
+    end
 
 end

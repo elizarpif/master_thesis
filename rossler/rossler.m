@@ -1,10 +1,11 @@
 %% Parameters
 Ey=0;
 % Natural frequencies
-wx = 1.1;
-wy = 0.9;
+wx = 0.995;
+wy = 1.015;
 
-couplingX_values = [0, logspace(log10(0.01), log10(1), 30)]; % Coupling strengths
+%  logspace(log10(0.01), log10(1), 30)
+couplingX_values = [0,logspace(log10(0.01), log10(1), 30)]; % Coupling strengths
 
 numRuns = 20; % Number of runs for averaging
 isPlotX1Y1 = false; % Option to plot dynamics
@@ -55,20 +56,20 @@ for idx = 1:length(couplingX_values)
         % Compute L metric
         Lmetric = computeLMetric(datarec, 1);
 
-        logger(sprintf("Ex = %f, run = %d, metric L computed", couplingX, runIdx));
+        logger(sprintf("Ex = %f, run = %d, metric L computed = %f", couplingX, runIdx, Lmetric(1)));
 
         L_XY_runs(runIdx) = Lmetric(1); % L(X|Y)
         L_YX_runs(runIdx) = Lmetric(2); % L(Y|X)
 
         G_runs(runIdx) = computeGMetric(y, y_aux);
-        logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G_runs(runIdx))));
+        % logger(sprintf("Ex = %f, run = %d, G(delta)=%f", couplingX, runIdx, mean(G_runs(runIdx))));
 
         S_runs(runIdx) = computeSMetric(x,y);
-        logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
+        % logger(sprintf("Ex = %f, run = %d, S(phase diff)=%f", couplingX, runIdx, S_runs(runIdx)));
 
         % Compute R metric
         R_runs(runIdx) = computeRMetric(datarec);
-        logger(sprintf("Ex = %f, run = %d, metric R computed", couplingX, runIdx));
+        % logger(sprintf("Ex = %f, run = %d, metric R computed", couplingX, runIdx));
 
     end
 
@@ -97,8 +98,8 @@ end
 toc
 
 %% Plot results
-plotCoupling(R_mean,R_errors, L_XY_mean, L_XY_errors,L_YX_mean, L_YX_errors, couplingX_values);
-plotCouplingOneMeasure(L_XY_mean-L_YX_mean,delta_L_errors, 'delta L', couplingX_values);
+% plotCoupling(R_mean,R_errors, L_XY_mean, L_XY_errors,L_YX_mean, L_YX_errors, couplingX_values);
+% plotCouplingOneMeasure(L_XY_mean,L_XY_errors, 'delta L', couplingX_values);
 % plotCouplingOneMeasure(G_mean,G_errors, 'G', couplingX_values);
 
 % plotMetricResults(couplingX_values, L_XY_all, L_XY_mean, 'L_{XY}');

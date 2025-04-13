@@ -5,7 +5,7 @@ y0 = rand(3, 1); % Random initial condition for system Y
 y0_aux = rand(3, 1); % Random initial condition for aux system Y
 
 h = 0.03; % Integration step
-nSteps = 100000; % Number of steps
+nSteps = 1000000; % Number of steps
 t = 0:h:(nSteps-1)*h;
 
 % Initialize solution arrays

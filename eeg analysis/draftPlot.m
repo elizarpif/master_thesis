@@ -1,4 +1,7 @@
-data = load("dataset/100 seizures/Pat16/P16_Sz1_block37.mat");
+patNum = 1;
+partNum = 1;
+
+data = load(sprintf("dataset/100 seizures/Pat%d/P0%d_Sz%d_block37.mat", patNum,patNum, partNum));
 eegDataOriginal = data.EEG';
 
 Fs = 512; 
@@ -8,7 +11,7 @@ Ts = 1 / Fs;
 filteredEEGbyBand = eegDataOriginal;
 
 % filteredEEGbyBand = filterAllEEGByBand(eegDataOriginal, Fs, "delta");
-PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat 16, part 1"));
+PlotEEG(filteredEEGbyBand, data.channelNameArray, Fs, sprintf("pat %d, part %d", patNum, partNum));
 
 
 % figure;
